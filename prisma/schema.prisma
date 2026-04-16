@@ -1,0 +1,273 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  COLLECTOR
+  ADMIN
+}
+
+enum WasteType {
+  PLASTIC
+  PAPER
+  ORGANIC
+  METAL
+  GLASS
+}
+
+enum PickupSlot {
+  PAGI
+  SIANG
+  SORE
+}
+
+enum PickupStatus {
+  MENUNGGU_MATCHING
+  TERJADWAL
+  DALAM_PERJALANAN
+  SELESAI
+  DIBATALKAN
+}
+
+enum BatchStatus {
+  MENUNGGU_KONFIRMASI
+  TERJADWAL
+  DALAM_PERJALANAN
+  SELESAI
+  DITOLAK
+}
+
+enum PaymentMethod {
+  CASH
+  EWALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  DIBAYAR
+}
+
+enum VerificationState {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum TransactionType {
+  INCOME
+  BONUS
+  ADJUSTMENT
+}
+
+enum ChatThreadStatus {
+  ACTIVE
+  READ_ONLY
+  CLOSED
+}
+
+enum ChatReportStatus {
+  OPEN
+  REVIEWED
+  RESOLVED
+}
+
+model Profile {
+  id                    String             @id @default(cuid())
+  authUserId            String?            @unique
+  email                 String             @unique
+  name                  String
+  role                  Role               @default(USER)
+  saldo                 Int                @default(0)
+  phone                 String?
+  address               String?
+  latitude              Float?
+  longitude             Float?
+  avatarUrl             String?
+  verificationState     VerificationState  @default(VERIFIED)
+  serviceAreaLabel      String?
+  serviceRadiusKm       Float?
+  dailyCapacityKg       Float?
+  currentLoadKg         Float              @default(0)
+  wastePricing          Json?
+  acceptedWasteTypes    WasteType[]        @default([])
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  savedAddresses        SavedAddress[]
+  submittedPickups      PickupRequest[]    @relation("UserPickupRequests")
+  assignedPickups       PickupRequest[]    @relation("CollectorPickupRequests")
+  assignedBatches       PickupBatch[]      @relation("CollectorPickupBatches")
+  earnedTransactions    Transaction[]      @relation("UserTransactions")
+  managedTransactions   Transaction[]      @relation("CollectorTransactions")
+  ratingsGiven          Rating[]           @relation("RatingsGiven")
+  ratingsReceived       Rating[]           @relation("RatingsReceived")
+  chatThreadsAsUser     ChatThread[]       @relation("ChatThreadUser")
+  chatThreadsAsCollector ChatThread[]      @relation("ChatThreadCollector")
+  chatMessages          ChatMessage[]
+  chatReportsFiled      ChatReport[]       @relation("ChatReportsFiled")
+  chatReportsTargeted   ChatReport[]       @relation("ChatReportsTargeted")
+}
+
+model SavedAddress {
+  id          String          @id @default(uuid())
+  profileId   String
+  label       String
+  address     String
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  profile     Profile         @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  pickupRequests PickupRequest[]
+}
+
+model PickupBatch {
+  id                    String        @id @default(uuid())
+  collectorId           String
+  serviceAreaLabel      String
+  pickupSlot            PickupSlot
+  totalEstimatedWeight  Float         @default(0)
+  totalActualWeight     Float         @default(0)
+  totalStops            Int           @default(0)
+  status                BatchStatus   @default(MENUNGGU_KONFIRMASI)
+  scheduledFor          DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  collector             Profile       @relation("CollectorPickupBatches", fields: [collectorId], references: [id], onDelete: Cascade)
+  requests              PickupRequest[]
+}
+
+model PickupRequest {
+  id                   String         @id @default(uuid())
+  requestNo            String         @unique
+  userId               String
+  collectorId          String?
+  batchId              String?
+  addressId            String?
+  wasteType            WasteType
+  estimatedWeightKg    Float
+  actualWeightKg       Float?
+  pricePerKgSnapshot   Int
+  estimatedTotalAmount Int
+  finalTotalAmount     Int?
+  photoUrl             String?
+  photoPath            String?
+  photoMimeType        String?
+  addressText          String
+  latitude             Float?
+  longitude            Float?
+  routeDistanceMeters  Int?
+  routeDurationSeconds Int?
+  routeProvider        String?
+  routeCalculatedAt    DateTime?
+  rejectedCollectorIds String[]       @default([])
+  rejectionHistory     Json?
+  requiresUserDecision Boolean        @default(false)
+  userAlertType        String?
+  userAlertMessage     String?
+  userAlertAcknowledgedAt DateTime?
+  autoCancelledAt      DateTime?
+  autoCancelledReason  String?
+  areaLabel            String
+  pickupSlot           PickupSlot
+  status               PickupStatus   @default(MENUNGGU_MATCHING)
+  notes                String?
+  collectorNote        String?
+  cancellationReason   String?
+  weightFlagged        Boolean        @default(false)
+  paymentMethod        PaymentMethod?
+  paymentStatus        PaymentStatus  @default(PENDING)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  scheduledAt          DateTime?
+  completedAt          DateTime?
+  user                 Profile        @relation("UserPickupRequests", fields: [userId], references: [id], onDelete: Cascade)
+  collector            Profile?       @relation("CollectorPickupRequests", fields: [collectorId], references: [id], onDelete: SetNull)
+  batch                PickupBatch?   @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  address              SavedAddress?  @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  transaction          Transaction?
+  ratings              Rating[]
+  chatThread           ChatThread?
+}
+
+model Transaction {
+  id               String          @id @default(uuid())
+  userId           String
+  collectorId      String?
+  pickupRequestId  String?         @unique
+  type             TransactionType @default(INCOME)
+  amount           Int
+  description      String
+  createdAt        DateTime        @default(now())
+  user             Profile         @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  collector        Profile?        @relation("CollectorTransactions", fields: [collectorId], references: [id], onDelete: SetNull)
+  pickupRequest    PickupRequest?  @relation(fields: [pickupRequestId], references: [id], onDelete: SetNull)
+}
+
+model Rating {
+  id               String        @id @default(uuid())
+  pickupRequestId  String
+  fromUserId       String
+  toUserId         String
+  score            Int
+  comment          String?
+  createdAt        DateTime      @default(now())
+  pickupRequest    PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+  fromUser         Profile       @relation("RatingsGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser           Profile       @relation("RatingsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+}
+
+model ChatThread {
+  id               String           @id @default(uuid())
+  pickupRequestId  String           @unique
+  userId           String
+  collectorId      String
+  status           ChatThreadStatus @default(ACTIVE)
+  expiresAt        DateTime?
+  lastMessageAt    DateTime?
+  userLastReadAt   DateTime?
+  collectorLastReadAt DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  pickupRequest    PickupRequest    @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
+  user             Profile          @relation("ChatThreadUser", fields: [userId], references: [id], onDelete: Cascade)
+  collector        Profile          @relation("ChatThreadCollector", fields: [collectorId], references: [id], onDelete: Cascade)
+  messages         ChatMessage[]
+  reports          ChatReport[]
+}
+
+model ChatMessage {
+  id               String       @id @default(uuid())
+  threadId         String
+  senderId         String
+  content          String
+  isSystemMessage  Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  thread           ChatThread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender           Profile      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reports          ChatReport[]
+}
+
+model ChatReport {
+  id               String           @id @default(uuid())
+  threadId         String
+  messageId        String?
+  reportedByUserId String
+  reportedUserId   String
+  reason           String
+  status           ChatReportStatus @default(OPEN)
+  adminDecision    String?
+  createdAt        DateTime         @default(now())
+  reviewedAt       DateTime?
+  thread           ChatThread       @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  message          ChatMessage?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  reportedByUser   Profile          @relation("ChatReportsFiled", fields: [reportedByUserId], references: [id], onDelete: Cascade)
+  reportedUser     Profile          @relation("ChatReportsTargeted", fields: [reportedUserId], references: [id], onDelete: Cascade)
+}

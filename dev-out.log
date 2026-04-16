@@ -1,0 +1,536 @@
+
+> smart-waste-competition-app@2.0.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.56.1:3001
+- Environments: .env
+✓ Ready in 616ms
+Creating turbopack project { dir: 'C:\\Penyimpanan Utama\\Dekstop\\smart-waste', testMode: true }
+
+ GET /login 200 in 922ms (next.js: 453ms, application-code: 468ms)
+ GET /dashboard 200 in 1171ms (next.js: 106ms, application-code: 1065ms)
+ GET /dashboard 200 in 302ms (next.js: 18ms, application-code: 284ms)
+✓ Compiled in 136ms
+ GET /login 200 in 76ms (next.js: 10ms, application-code: 66ms)
+✓ Compiled in 142ms
+ GET /login 200 in 75ms (next.js: 9ms, application-code: 66ms)
+✓ Compiled in 136ms
+✓ Compiled in 205ms
+✓ Compiled in 117ms
+✓ Compiled in 230ms
+ GET /login 200 in 604ms (next.js: 269ms, application-code: 334ms)
+ GET /login 200 in 174ms (next.js: 8ms, application-code: 166ms)
+ GET /login 200 in 120ms (next.js: 8ms, application-code: 112ms)
+ GET /login 200 in 120ms (next.js: 59ms, application-code: 61ms)
+ GET /dashboard 200 in 1756ms (next.js: 283ms, application-code: 1473ms)
+✓ Compiled in 178ms
+ GET /login 200 in 673ms (next.js: 332ms, application-code: 342ms)
+ GET /login 200 in 143ms (next.js: 9ms, application-code: 134ms)
+ GET /login 200 in 68ms (next.js: 7ms, application-code: 60ms)
+✓ Compiled in 148ms
+✓ Compiled in 245ms
+ GET /login 200 in 646ms (next.js: 233ms, application-code: 413ms)
+ GET /login 200 in 298ms (next.js: 8ms, application-code: 290ms)
+ GET /login 200 in 273ms (next.js: 8ms, application-code: 265ms)
+ GET /login 200 in 273ms (next.js: 90ms, application-code: 184ms)
+ GET /login 200 in 277ms (next.js: 51ms, application-code: 227ms)
+ GET /login 200 in 277ms (next.js: 127ms, application-code: 150ms)
+ GET /login 200 in 296ms (next.js: 6ms, application-code: 291ms)
+ GET /login 200 in 307ms (next.js: 6ms, application-code: 301ms)
+ GET /login 200 in 297ms (next.js: 8ms, application-code: 289ms)
+ GET /login 200 in 298ms (next.js: 57ms, application-code: 242ms)
+ GET /login 200 in 253ms (next.js: 56ms, application-code: 197ms)
+ GET /login 200 in 255ms (next.js: 96ms, application-code: 159ms)
+ GET /login 200 in 106ms (next.js: 6ms, application-code: 101ms)
+ GET /login 200 in 58ms (next.js: 6ms, application-code: 52ms)
+ GET /dashboard 200 in 1742ms (next.js: 330ms, application-code: 1412ms)
+✓ Compiled in 86ms
+ GET /login 200 in 77ms (next.js: 7ms, application-code: 70ms)
+✓ Compiled in 116ms
+✓ Compiled in 131ms
+✓ Compiled in 110ms
+ GET /login 200 in 737ms (next.js: 234ms, application-code: 503ms)
+ GET /login 200 in 336ms (next.js: 8ms, application-code: 328ms)
+ GET /login 200 in 283ms (next.js: 11ms, application-code: 272ms)
+ GET /login 200 in 284ms (next.js: 66ms, application-code: 219ms)
+ GET /login 200 in 209ms (next.js: 50ms, application-code: 158ms)
+ GET /login 200 in 333ms (next.js: 127ms, application-code: 206ms)
+ GET /login 200 in 312ms (next.js: 8ms, application-code: 304ms)
+ GET /login 200 in 265ms (next.js: 12ms, application-code: 253ms)
+ GET /login 200 in 211ms (next.js: 9ms, application-code: 202ms)
+ GET /login 200 in 210ms (next.js: 55ms, application-code: 155ms)
+ GET /login 200 in 120ms (next.js: 8ms, application-code: 112ms)
+ GET /login 200 in 120ms (next.js: 57ms, application-code: 64ms)
+ GET /showcase 200 in 2.1s (next.js: 1337ms, application-code: 727ms)
+✓ Compiled in 119ms
+✓ Compiled in 422ms
+ GET /login 200 in 933ms (next.js: 12ms, application-code: 921ms)
+ GET /login 200 in 594ms (next.js: 204ms, application-code: 390ms)
+ GET /login 200 in 223ms (next.js: 15ms, application-code: 208ms)
+ GET /login 200 in 219ms (next.js: 168ms, application-code: 52ms)
+ GET /login 200 in 225ms (next.js: 87ms, application-code: 137ms)
+ GET /login 200 in 224ms (next.js: 125ms, application-code: 99ms)
+ GET /showcase?mode=present 200 in 1306ms (next.js: 240ms, application-code: 1066ms)
+ GET /showcase 200 in 312ms (next.js: 8ms, application-code: 304ms)
+✓ Compiled in 110ms
+✓ Compiled in 104ms
+✓ Compiled in 129ms
+ GET /login 200 in 766ms (next.js: 268ms, application-code: 498ms)
+ GET /login 200 in 365ms (next.js: 7ms, application-code: 359ms)
+ GET /login 200 in 360ms (next.js: 13ms, application-code: 347ms)
+ GET /login 200 in 359ms (next.js: 158ms, application-code: 202ms)
+ GET /login 200 in 359ms (next.js: 199ms, application-code: 160ms)
+ GET /login 200 in 365ms (next.js: 62ms, application-code: 303ms)
+ GET /login 200 in 302ms (next.js: 6ms, application-code: 296ms)
+ GET /login 200 in 294ms (next.js: 5ms, application-code: 289ms)
+ GET /login 200 in 277ms (next.js: 9ms, application-code: 269ms)
+ GET /login 200 in 285ms (next.js: 52ms, application-code: 233ms)
+ GET /login 200 in 284ms (next.js: 144ms, application-code: 140ms)
+ GET /login 200 in 287ms (next.js: 95ms, application-code: 192ms)
+ GET /login 200 in 106ms (next.js: 4ms, application-code: 101ms)
+ GET /login 200 in 67ms (next.js: 6ms, application-code: 61ms)
+ GET /login 200 in 755ms (next.js: 239ms, application-code: 516ms)
+ GET /login 200 in 401ms (next.js: 8ms, application-code: 393ms)
+ GET /login 200 in 341ms (next.js: 126ms, application-code: 215ms)
+ GET /login 200 in 344ms (next.js: 56ms, application-code: 288ms)
+ GET /login 200 in 347ms (next.js: 9ms, application-code: 338ms)
+ GET /login 200 in 394ms (next.js: 177ms, application-code: 217ms)
+ GET /login 200 in 372ms (next.js: 6ms, application-code: 366ms)
+ GET /login 200 in 341ms (next.js: 12ms, application-code: 328ms)
+ GET /login 200 in 287ms (next.js: 10ms, application-code: 277ms)
+ GET /login 200 in 289ms (next.js: 59ms, application-code: 230ms)
+ GET /login 200 in 294ms (next.js: 109ms, application-code: 185ms)
+ GET /login 200 in 238ms (next.js: 8ms, application-code: 230ms)
+ GET /login 200 in 233ms (next.js: 8ms, application-code: 226ms)
+ GET /login 200 in 172ms (next.js: 12ms, application-code: 160ms)
+ GET /login 200 in 113ms (next.js: 7ms, application-code: 106ms)
+ GET /login 200 in 112ms (next.js: 55ms, application-code: 57ms)
+✓ Compiled in 191ms
+ GET /login 200 in 921ms (next.js: 12ms, application-code: 910ms)
+ GET /login 200 in 601ms (next.js: 196ms, application-code: 406ms)
+ GET /login 200 in 253ms (next.js: 12ms, application-code: 241ms)
+ GET /login 200 in 254ms (next.js: 112ms, application-code: 142ms)
+ GET /login 200 in 253ms (next.js: 191ms, application-code: 62ms)
+ GET /login 200 in 257ms (next.js: 154ms, application-code: 103ms)
+✓ Compiled in 128ms
+ GET /login 200 in 115ms (next.js: 9ms, application-code: 106ms)
+ GET /transactions 200 in 895ms (next.js: 547ms, application-code: 348ms)
+ GET /pickups/1060419c-236a-4ac8-8fd4-a6cd54e79eea 404 in 1481ms (next.js: 1307ms, application-code: 174ms)
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 270ms (next.js: 16ms, application-code: 254ms)
+✓ Compiled in 90ms
+ GET /login 200 in 120ms (next.js: 11ms, application-code: 109ms)
+ GET /login 200 in 60ms (next.js: 5ms, application-code: 55ms)
+✓ Compiled in 117ms
+✓ Compiled in 121ms
+ GET /login 200 in 741ms (next.js: 241ms, application-code: 500ms)
+ GET /login 200 in 350ms (next.js: 6ms, application-code: 344ms)
+ GET /login 200 in 350ms (next.js: 9ms, application-code: 341ms)
+ GET /login 200 in 349ms (next.js: 146ms, application-code: 204ms)
+ GET /login 200 in 350ms (next.js: 189ms, application-code: 161ms)
+ GET /login 200 in 353ms (next.js: 81ms, application-code: 272ms)
+ GET /login 200 in 311ms (next.js: 5ms, application-code: 306ms)
+ GET /login 200 in 299ms (next.js: 6ms, application-code: 293ms)
+ GET /login 200 in 248ms (next.js: 8ms, application-code: 240ms)
+ GET /login 200 in 249ms (next.js: 51ms, application-code: 198ms)
+ GET /login 200 in 249ms (next.js: 146ms, application-code: 104ms)
+ GET /login 200 in 295ms (next.js: 96ms, application-code: 199ms)
+ GET /login 200 in 273ms (next.js: 5ms, application-code: 269ms)
+ GET /login 200 in 230ms (next.js: 10ms, application-code: 219ms)
+ GET /login 200 in 176ms (next.js: 7ms, application-code: 169ms)
+ GET /login 200 in 177ms (next.js: 42ms, application-code: 135ms)
+ GET /login 200 in 177ms (next.js: 125ms, application-code: 52ms)
+ GET /login 200 in 179ms (next.js: 79ms, application-code: 101ms)
+✓ Compiled in 198ms
+ GET /login 200 in 521ms (next.js: 210ms, application-code: 312ms)
+ GET /login 200 in 144ms (next.js: 4ms, application-code: 140ms)
+ GET /login 200 in 101ms (next.js: 6ms, application-code: 96ms)
+ GET /login 200 in 102ms (next.js: 50ms, application-code: 52ms)
+✓ Compiled in 105ms
+ GET /login 200 in 66ms (next.js: 14ms, application-code: 52ms)
+ GET /pickups?status=COMPLETED 200 in 1078ms (next.js: 575ms, application-code: 503ms)
+ GET /transactions?type=INCOME&query=pickup 200 in 815ms (next.js: 296ms, application-code: 519ms)
+✓ Compiled in 93ms
+ GET /login 200 in 505ms (next.js: 196ms, application-code: 309ms)
+ GET /login 200 in 144ms (next.js: 6ms, application-code: 138ms)
+ GET /login 200 in 90ms (next.js: 6ms, application-code: 85ms)
+ GET /login 200 in 91ms (next.js: 44ms, application-code: 47ms)
+ GET /login 200 in 646ms (next.js: 252ms, application-code: 394ms)
+ GET /login 200 in 240ms (next.js: 5ms, application-code: 234ms)
+ GET /login 200 in 301ms (next.js: 7ms, application-code: 295ms)
+ GET /login 200 in 308ms (next.js: 95ms, application-code: 214ms)
+ GET /login 200 in 311ms (next.js: 44ms, application-code: 267ms)
+ GET /login 200 in 313ms (next.js: 138ms, application-code: 175ms)
+ GET /login 200 in 317ms (next.js: 7ms, application-code: 310ms)
+ GET /login 200 in 260ms (next.js: 5ms, application-code: 255ms)
+ GET /login 200 in 338ms (next.js: 7ms, application-code: 331ms)
+ GET /login 200 in 338ms (next.js: 50ms, application-code: 288ms)
+ GET /login 200 in 296ms (next.js: 44ms, application-code: 252ms)
+ GET /login 200 in 298ms (next.js: 85ms, application-code: 213ms)
+ GET /login 200 in 327ms (next.js: 9ms, application-code: 318ms)
+ GET /login 200 in 235ms (next.js: 6ms, application-code: 229ms)
+ GET /login 200 in 271ms (next.js: 40ms, application-code: 230ms)
+ GET /login 200 in 276ms (next.js: 6ms, application-code: 270ms)
+ GET /login 200 in 202ms (next.js: 7ms, application-code: 195ms)
+ GET /login 200 in 202ms (next.js: 48ms, application-code: 154ms)
+ GET /login 200 in 111ms (next.js: 8ms, application-code: 103ms)
+ GET /login 200 in 68ms (next.js: 6ms, application-code: 62ms)
+ GET /login 200 in 636ms (next.js: 222ms, application-code: 414ms)
+ GET /login 200 in 257ms (next.js: 5ms, application-code: 252ms)
+ GET /login 200 in 275ms (next.js: 7ms, application-code: 268ms)
+ GET /login 200 in 281ms (next.js: 44ms, application-code: 237ms)
+ GET /login 200 in 281ms (next.js: 154ms, application-code: 127ms)
+ GET /login 200 in 284ms (next.js: 95ms, application-code: 189ms)
+ GET /login 200 in 347ms (next.js: 7ms, application-code: 339ms)
+ GET /login 200 in 333ms (next.js: 19ms, application-code: 314ms)
+ GET /login 200 in 279ms (next.js: 7ms, application-code: 272ms)
+ GET /login 200 in 280ms (next.js: 133ms, application-code: 147ms)
+ GET /login 200 in 285ms (next.js: 86ms, application-code: 198ms)
+ GET /login 200 in 255ms (next.js: 107ms, application-code: 148ms)
+ GET /login 200 in 294ms (next.js: 6ms, application-code: 288ms)
+ GET /login 200 in 294ms (next.js: 11ms, application-code: 282ms)
+ GET /login 200 in 247ms (next.js: 11ms, application-code: 236ms)
+ GET /login 200 in 246ms (next.js: 58ms, application-code: 189ms)
+ GET /login 200 in 245ms (next.js: 95ms, application-code: 150ms)
+ GET /login 200 in 204ms (next.js: 43ms, application-code: 161ms)
+ GET /login 200 in 195ms (next.js: 5ms, application-code: 190ms)
+ GET /login 200 in 153ms (next.js: 12ms, application-code: 142ms)
+ GET /login 200 in 101ms (next.js: 6ms, application-code: 95ms)
+ GET /login 200 in 101ms (next.js: 53ms, application-code: 49ms)
+✓ Compiled in 101ms
+ GET /login 200 in 70ms (next.js: 8ms, application-code: 62ms)
+✓ Compiled in 112ms
+ GET /login 200 in 73ms (next.js: 12ms, application-code: 61ms)
+ GET /api/export/pickups?status=COMPLETED 200 in 700ms (next.js: 635ms, application-code: 65ms)
+ GET /api/export/transactions?type=INCOME&query=pickup 200 in 229ms (next.js: 206ms, application-code: 23ms)
+✓ Compiled in 173ms
+✓ Compiled in 119ms
+ GET /login 200 in 111ms (next.js: 4ms, application-code: 107ms)
+ GET /login 200 in 66ms (next.js: 4ms, application-code: 61ms)
+✓ Compiled in 129ms
+ GET /login 200 in 780ms (next.js: 237ms, application-code: 544ms)
+ GET /login 200 in 339ms (next.js: 14ms, application-code: 325ms)
+ GET /login 200 in 372ms (next.js: 91ms, application-code: 282ms)
+ GET /login 200 in 379ms (next.js: 29ms, application-code: 350ms)
+ GET /login 200 in 377ms (next.js: 137ms, application-code: 241ms)
+ GET /login 200 in 378ms (next.js: 184ms, application-code: 194ms)
+ GET /login 200 in 348ms (next.js: 11ms, application-code: 338ms)
+ GET /login 200 in 286ms (next.js: 9ms, application-code: 276ms)
+ GET /login 200 in 275ms (next.js: 10ms, application-code: 265ms)
+ GET /login 200 in 275ms (next.js: 60ms, application-code: 215ms)
+ GET /login 200 in 275ms (next.js: 113ms, application-code: 162ms)
+ GET /login 200 in 275ms (next.js: 151ms, application-code: 125ms)
+ GET /login 200 in 299ms (next.js: 9ms, application-code: 290ms)
+ GET /login 200 in 305ms (next.js: 13ms, application-code: 292ms)
+ GET /login 200 in 255ms (next.js: 6ms, application-code: 249ms)
+ GET /login 200 in 256ms (next.js: 52ms, application-code: 204ms)
+ GET /login 200 in 260ms (next.js: 99ms, application-code: 161ms)
+ GET /login 200 in 262ms (next.js: 143ms, application-code: 119ms)
+ GET /login 200 in 290ms (next.js: 6ms, application-code: 284ms)
+ GET /login 200 in 231ms (next.js: 11ms, application-code: 220ms)
+ GET /login 200 in 181ms (next.js: 8ms, application-code: 173ms)
+ GET /login 200 in 180ms (next.js: 45ms, application-code: 135ms)
+ GET /login 200 in 180ms (next.js: 79ms, application-code: 101ms)
+ GET /login 200 in 181ms (next.js: 127ms, application-code: 54ms)
+ GET /login 200 in 653ms (next.js: 240ms, application-code: 413ms)
+ GET /login 200 in 251ms (next.js: 5ms, application-code: 246ms)
+ GET /login 200 in 205ms (next.js: 106ms, application-code: 98ms)
+ GET /login 200 in 209ms (next.js: 7ms, application-code: 202ms)
+ GET /login 200 in 209ms (next.js: 59ms, application-code: 151ms)
+ GET /login 200 in 211ms (next.js: 147ms, application-code: 64ms)
+ GET /login 200 in 448ms (next.js: 197ms, application-code: 251ms)
+ GET /login 200 in 101ms (next.js: 6ms, application-code: 95ms)
+ GET /login 200 in 52ms (next.js: 5ms, application-code: 47ms)
+✓ Compiled in 199ms
+ GET /login 200 in 492ms (next.js: 194ms, application-code: 299ms)
+ GET /login 200 in 145ms (next.js: 4ms, application-code: 141ms)
+ GET /login 200 in 97ms (next.js: 6ms, application-code: 91ms)
+ GET /login 200 in 98ms (next.js: 44ms, application-code: 54ms)
+✓ Compiled in 186ms
+ GET /login 200 in 571ms (next.js: 189ms, application-code: 382ms)
+ GET /login 200 in 236ms (next.js: 8ms, application-code: 228ms)
+ GET /login 200 in 170ms (next.js: 117ms, application-code: 53ms)
+ GET /login 200 in 174ms (next.js: 9ms, application-code: 165ms)
+✓ Compiled in 190ms
+ GET /login 200 in 535ms (next.js: 209ms, application-code: 326ms)
+ GET /login 200 in 168ms (next.js: 5ms, application-code: 164ms)
+ GET /login 200 in 118ms (next.js: 7ms, application-code: 111ms)
+ GET /login 200 in 120ms (next.js: 50ms, application-code: 70ms)
+✓ Compiled in 261ms
+ GET /login 200 in 530ms (next.js: 212ms, application-code: 318ms)
+ GET /login 200 in 154ms (next.js: 5ms, application-code: 149ms)
+ GET /login 200 in 99ms (next.js: 50ms, application-code: 49ms)
+ GET /login 200 in 103ms (next.js: 9ms, application-code: 94ms)
+ GET /leaderboard 200 in 1479ms (next.js: 500ms, application-code: 979ms)
+ GET / 200 in 433ms (next.js: 55ms, application-code: 379ms)
+ GET /api/export/transactions?type=INCOME&query=pickup 200 in 185ms (next.js: 129ms, application-code: 56ms)
+ GET /api/export/pickups?status=COMPLETED 200 in 58ms (next.js: 35ms, application-code: 23ms)
+ GET / 200 in 228ms (next.js: 4ms, application-code: 223ms)
+ GET /showcase 200 in 1288ms (next.js: 245ms, application-code: 1043ms)
+ GET /showcase?mode=present 200 in 181ms (next.js: 7ms, application-code: 173ms)
+ GET /dashboard 200 in 1412ms (next.js: 259ms, application-code: 1153ms)
+ GET /leaderboard 200 in 168ms (next.js: 4ms, application-code: 164ms)
+ GET /pickups 200 in 767ms (next.js: 244ms, application-code: 523ms)
+ GET /transactions 200 in 802ms (next.js: 227ms, application-code: 574ms)
+ GET / 200 in 263ms (next.js: 11ms, application-code: 252ms)
+ GET /showcase?mode=present 200 in 200ms (next.js: 6ms, application-code: 194ms)
+ GET /dashboard 200 in 279ms (next.js: 4ms, application-code: 275ms)
+ GET /leaderboard 200 in 182ms (next.js: 5ms, application-code: 177ms)
+ GET /transactions?type=INCOME&query=pickup 200 in 167ms (next.js: 5ms, application-code: 162ms)
+ GET /pickups/1060419c-236a-4ac8-8fd4-a6cd54e79eea 404 in 733ms (next.js: 268ms, application-code: 465ms)
+ GET /pickups?status=COMPLETED 200 in 226ms (next.js: 6ms, application-code: 220ms)
+ GET / 200 in 210ms (next.js: 4ms, application-code: 206ms)
+ GET / 200 in 231ms (next.js: 9ms, application-code: 222ms)
+ GET /showcase 200 in 172ms (next.js: 6ms, application-code: 166ms)
+ GET /showcase?mode=present 200 in 139ms (next.js: 5ms, application-code: 134ms)
+ GET /dashboard 200 in 174ms (next.js: 11ms, application-code: 164ms)
+ POST /dashboard 200 in 153ms (next.js: 4ms, application-code: 149ms)
+  └─ ƒ switchDemoProfile({}) in 10ms app/actions/demo.ts
+ POST /dashboard 200 in 143ms (next.js: 4ms, application-code: 139ms)
+  └─ ƒ switchDemoProfile({}) in 3ms app/actions/demo.ts
+ POST /dashboard 200 in 144ms (next.js: 4ms, application-code: 140ms)
+  └─ ƒ switchDemoProfile({}) in 13ms app/actions/demo.ts
+ POST /dashboard 200 in 236ms (next.js: 4ms, application-code: 232ms)
+  └─ ƒ switchDemoProfile({}) in 6ms app/actions/demo.ts
+ POST /dashboard 200 in 170ms (next.js: 4ms, application-code: 165ms)
+  └─ ƒ acceptPickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 36ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 156ms (next.js: 6ms, application-code: 150ms)
+  └─ ƒ releasePickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 21ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 148ms (next.js: 7ms, application-code: 141ms)
+  └─ ƒ acceptPickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 24ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 152ms (next.js: 5ms, application-code: 147ms)
+  └─ ƒ releasePickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 30ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 138ms (next.js: 4ms, application-code: 134ms)
+  └─ ƒ acceptPickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 24ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 184ms (next.js: 6ms, application-code: 178ms)
+  └─ ƒ releasePickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 66ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 166ms (next.js: 5ms, application-code: 161ms)
+  └─ ƒ acceptPickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 53ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 126ms (next.js: 5ms, application-code: 122ms)
+  └─ ƒ releasePickup("1060419c-236a-4ac8-8fd4-a6cd54e79eea") in 14ms lib/actions/dashboard.ts
+ POST /dashboard 200 in 201ms (next.js: 6ms, application-code: 195ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ GET /pickups/1060419c-236a-4ac8-8fd4-a6cd54e79eea 200 in 140ms (next.js: 14ms, application-code: 126ms)
+ POST /pickups/1060419c-236a-4ac8-8fd4-a6cd54e79eea 200 in 119ms (next.js: 15ms, application-code: 104ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ POST /pickups/1060419c-236a-4ac8-8fd4-a6cd54e79eea 200 in 113ms (next.js: 13ms, application-code: 100ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ GET /transactions 200 in 96ms (next.js: 6ms, application-code: 90ms)
+ POST /transactions 200 in 93ms (next.js: 4ms, application-code: 88ms)
+  └─ ƒ switchDemoProfile({}) in 9ms app/actions/demo.ts
+ POST /transactions 200 in 98ms (next.js: 4ms, application-code: 93ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ POST /transactions 200 in 110ms (next.js: 4ms, application-code: 106ms)
+  └─ ƒ switchDemoProfile({}) in 14ms app/actions/demo.ts
+ POST /transactions 200 in 102ms (next.js: 5ms, application-code: 97ms)
+  └─ ƒ switchDemoProfile({}) in 9ms app/actions/demo.ts
+ GET /leaderboard 200 in 124ms (next.js: 3ms, application-code: 120ms)
+ GET /dashboard 200 in 123ms (next.js: 5ms, application-code: 118ms)
+ GET /dashboard 200 in 14ms (next.js: 5ms, application-code: 9ms)
+ GET /dashboard 200 in 120ms (next.js: 4ms, application-code: 116ms)
+ POST /dashboard 200 in 161ms (next.js: 4ms, application-code: 157ms)
+  └─ ƒ switchDemoProfile({}) in 14ms app/actions/demo.ts
+ GET /dashboard 200 in 14ms (next.js: 5ms, application-code: 9ms)
+ GET /dashboard 200 in 174ms (next.js: 4ms, application-code: 170ms)
+ GET /dashboard 200 in 24ms (next.js: 7ms, application-code: 17ms)
+ GET /dashboard 200 in 145ms (next.js: 4ms, application-code: 141ms)
+ GET /dashboard 200 in 16ms (next.js: 5ms, application-code: 12ms)
+ GET /dashboard 200 in 135ms (next.js: 11ms, application-code: 124ms)
+ GET /transactions 200 in 99ms (next.js: 6ms, application-code: 93ms)
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 128ms (next.js: 15ms, application-code: 113ms)
+ GET /transactions 200 in 86ms (next.js: 6ms, application-code: 80ms)
+ POST /transactions 200 in 106ms (next.js: 4ms, application-code: 101ms)
+  └─ ƒ switchDemoProfile({}) in 16ms app/actions/demo.ts
+ POST /transactions 200 in 121ms (next.js: 6ms, application-code: 115ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ POST /transactions 200 in 104ms (next.js: 4ms, application-code: 100ms)
+  └─ ƒ switchDemoProfile({}) in 15ms app/actions/demo.ts
+ POST /transactions 200 in 90ms (next.js: 5ms, application-code: 85ms)
+  └─ ƒ switchDemoProfile({}) in 4ms app/actions/demo.ts
+ GET / 200 in 183ms (next.js: 5ms, application-code: 178ms)
+ POST /transactions 303 in 238ms (next.js: 5ms, application-code: 232ms)
+  └─ ƒ signOut() in 16ms app/(auth)/login/actions.ts
+ POST / 200 in 165ms (next.js: 5ms, application-code: 160ms)
+  └─ ƒ switchDemoProfile({}) in 4ms app/actions/demo.ts
+ POST / 200 in 165ms (next.js: 6ms, application-code: 159ms)
+  └─ ƒ switchDemoProfile({}) in 15ms app/actions/demo.ts
+ POST / 200 in 130ms (next.js: 4ms, application-code: 126ms)
+  └─ ƒ switchDemoProfile({}) in 5ms app/actions/demo.ts
+ GET /leaderboard 200 in 117ms (next.js: 5ms, application-code: 112ms)
+ GET /dashboard 200 in 146ms (next.js: 6ms, application-code: 140ms)
+ POST /dashboard 200 in 151ms (next.js: 5ms, application-code: 146ms)
+  └─ ƒ switchDemoProfile({}) in 18ms app/actions/demo.ts
+ POST /dashboard 200 in 136ms (next.js: 4ms, application-code: 132ms)
+  └─ ƒ switchDemoProfile({}) in 3ms app/actions/demo.ts
+ POST /dashboard 200 in 137ms (next.js: 4ms, application-code: 133ms)
+  └─ ƒ switchDemoProfile({}) in 3ms app/actions/demo.ts
+ POST /dashboard 200 in 138ms (next.js: 6ms, application-code: 132ms)
+  └─ ƒ switchDemoProfile({}) in 9ms app/actions/demo.ts
+ POST /dashboard 200 in 160ms (next.js: 5ms, application-code: 155ms)
+  └─ ƒ switchDemoProfile({}) in 6ms app/actions/demo.ts
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 121ms (next.js: 17ms, application-code: 103ms)
+ GET /dashboard 200 in 140ms (next.js: 7ms, application-code: 134ms)
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 110ms (next.js: 14ms, application-code: 96ms)
+ GET /dashboard 200 in 128ms (next.js: 7ms, application-code: 121ms)
+ GET /pickups 200 in 86ms (next.js: 5ms, application-code: 81ms)
+ GET /dashboard 200 in 134ms (next.js: 4ms, application-code: 130ms)
+ GET /transactions 200 in 71ms (next.js: 5ms, application-code: 66ms)
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 163ms (next.js: 17ms, application-code: 146ms)
+ GET /transactions 200 in 85ms (next.js: 5ms, application-code: 80ms)
+ POST /transactions 200 in 85ms (next.js: 4ms, application-code: 82ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ POST /transactions 200 in 98ms (next.js: 4ms, application-code: 93ms)
+  └─ ƒ switchDemoProfile({}) in 9ms app/actions/demo.ts
+ POST /transactions 200 in 90ms (next.js: 5ms, application-code: 84ms)
+  └─ ƒ switchDemoProfile({}) in 3ms app/actions/demo.ts
+ POST /transactions 200 in 95ms (next.js: 5ms, application-code: 89ms)
+  └─ ƒ switchDemoProfile({}) in 11ms app/actions/demo.ts
+ GET /dashboard 200 in 172ms (next.js: 4ms, application-code: 168ms)
+ POST /dashboard 200 in 141ms (next.js: 5ms, application-code: 136ms)
+  └─ ƒ switchDemoProfile({}) in 6ms app/actions/demo.ts
+ POST /dashboard 200 in 122ms (next.js: 4ms, application-code: 118ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ POST /dashboard 200 in 132ms (next.js: 4ms, application-code: 128ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ GET /dashboard 200 in 1574ms (next.js: 269ms, application-code: 1305ms)
+ GET /dashboard 200 in 1148ms (next.js: 10ms, application-code: 1139ms)
+ GET /dashboard 200 in 936ms (next.js: 73ms, application-code: 862ms)
+ GET /dashboard 200 in 941ms (next.js: 28ms, application-code: 913ms)
+ GET /dashboard 200 in 939ms (next.js: 122ms, application-code: 817ms)
+ GET /dashboard 200 in 981ms (next.js: 189ms, application-code: 792ms)
+ GET /dashboard 200 in 363ms (next.js: 7ms, application-code: 357ms)
+ GET /dashboard 200 in 303ms (next.js: 20ms, application-code: 283ms)
+ GET / 200 in 990ms (next.js: 282ms, application-code: 708ms)
+ GET /showcase 200 in 1111ms (next.js: 232ms, application-code: 879ms)
+ GET / 200 in 317ms (next.js: 7ms, application-code: 310ms)
+ GET /showcase 200 in 239ms (next.js: 5ms, application-code: 235ms)
+ GET /dashboard 200 in 459ms (next.js: 6ms, application-code: 452ms)
+ POST /dashboard 200 in 134ms (next.js: 4ms, application-code: 130ms)
+  └─ ƒ switchDemoProfile({}) in 2ms app/actions/demo.ts
+ POST /dashboard 200 in 137ms (next.js: 5ms, application-code: 132ms)
+  └─ ƒ switchDemoProfile({}) in 4ms app/actions/demo.ts
+ POST /dashboard 200 in 133ms (next.js: 4ms, application-code: 129ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ POST /dashboard 200 in 220ms (next.js: 5ms, application-code: 215ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ POST /dashboard 200 in 196ms (next.js: 4ms, application-code: 191ms)
+  └─ ƒ switchDemoProfile({}) in 9ms app/actions/demo.ts
+ GET /dashboard 200 in 771ms (next.js: 290ms, application-code: 481ms)
+ GET /dashboard 200 in 271ms (next.js: 13ms, application-code: 259ms)
+✓ Compiled in 141ms
+✓ Compiled in 525ms
+ GET /dashboard 200 in 2.0s (next.js: 866ms, application-code: 1149ms)
+ GET /dashboard 200 in 854ms (next.js: 17ms, application-code: 837ms)
+ GET /dashboard 200 in 679ms (next.js: 24ms, application-code: 656ms)
+ GET /dashboard 200 in 680ms (next.js: 57ms, application-code: 623ms)
+ GET /dashboard 200 in 681ms (next.js: 110ms, application-code: 571ms)
+ GET /dashboard 200 in 682ms (next.js: 154ms, application-code: 528ms)
+ GET /dashboard 200 in 1246ms (next.js: 283ms, application-code: 963ms)
+ GET /dashboard 200 in 729ms (next.js: 15ms, application-code: 714ms)
+ GET /dashboard 200 in 627ms (next.js: 125ms, application-code: 503ms)
+ GET /dashboard 200 in 513ms (next.js: 84ms, application-code: 429ms)
+✓ Compiled in 117ms
+ GET /dashboard 200 in 474ms (next.js: 6ms, application-code: 467ms)
+ GET /dashboard 200 in 409ms (next.js: 15ms, application-code: 394ms)
+ GET /dashboard 200 in 339ms (next.js: 76ms, application-code: 263ms)
+✓ Compiled in 214ms
+ GET /dashboard 200 in 1262ms (next.js: 265ms, application-code: 997ms)
+ GET /dashboard 200 in 821ms (next.js: 16ms, application-code: 805ms)
+ GET /dashboard 200 in 659ms (next.js: 89ms, application-code: 570ms)
+ GET /dashboard 200 in 662ms (next.js: 59ms, application-code: 603ms)
+ GET /dashboard 200 in 666ms (next.js: 27ms, application-code: 639ms)
+ GET /dashboard 200 in 667ms (next.js: 126ms, application-code: 541ms)
+✓ Compiled in 182ms
+ GET /dashboard 200 in 1197ms (next.js: 8ms, application-code: 1189ms)
+ GET /dashboard 200 in 863ms (next.js: 213ms, application-code: 650ms)
+ GET /dashboard 200 in 408ms (next.js: 61ms, application-code: 347ms)
+ GET /dashboard 200 in 412ms (next.js: 18ms, application-code: 394ms)
+ POST /dashboard 200 in 196ms (next.js: 6ms, application-code: 190ms)
+  └─ ƒ switchDemoProfile({}) in 14ms app/actions/demo.ts
+ POST /dashboard 200 in 163ms (next.js: 5ms, application-code: 158ms)
+  └─ ƒ switchDemoProfile({}) in 14ms app/actions/demo.ts
+ GET /dashboard 200 in 1153ms (next.js: 4ms, application-code: 1149ms)
+ GET /pickups/11e31b83-3f4e-413b-9b7f-a1bf179fa6d4 200 in 1722ms (next.js: 283ms, application-code: 1440ms)
+ GET /pickups 200 in 1170ms (next.js: 359ms, application-code: 811ms)
+ GET /pickups/e14ded08-47d9-466c-a2ff-131ccaad72f0 200 in 306ms (next.js: 16ms, application-code: 291ms)
+ GET /pickups 200 in 163ms (next.js: 5ms, application-code: 157ms)
+ GET /dashboard 200 in 482ms (next.js: 6ms, application-code: 476ms)
+ POST /dashboard 200 in 140ms (next.js: 4ms, application-code: 136ms)
+  └─ ƒ switchDemoProfile({}) in 5ms app/actions/demo.ts
+✓ Compiled in 194ms
+ GET /dashboard 200 in 675ms (next.js: 271ms, application-code: 404ms)
+ GET /dashboard 200 in 212ms (next.js: 11ms, application-code: 201ms)
+✓ Compiled in 103ms
+ GET /dashboard 200 in 641ms (next.js: 255ms, application-code: 386ms)
+ GET /dashboard 200 in 248ms (next.js: 12ms, application-code: 236ms)
+✓ Compiled in 103ms
+ GET /dashboard 200 in 145ms (next.js: 6ms, application-code: 139ms)
+ GET /pickups 200 in 1170ms (next.js: 270ms, application-code: 901ms)
+ GET /pickups/e14ded08-47d9-466c-a2ff-131ccaad72f0 200 in 915ms (next.js: 299ms, application-code: 616ms)
+ GET /dashboard 200 in 1161ms (next.js: 5ms, application-code: 1155ms)
+ GET /dashboard 200 in 298ms (next.js: 6ms, application-code: 293ms)
+ GET /dashboard 200 in 459ms (next.js: 6ms, application-code: 452ms)
+ POST /dashboard 200 in 160ms (next.js: 6ms, application-code: 154ms)
+  └─ ƒ switchDemoProfile({}) in 17ms app/actions/demo.ts
+ POST /dashboard 200 in 144ms (next.js: 5ms, application-code: 138ms)
+  └─ ƒ switchDemoProfile({}) in 6ms app/actions/demo.ts
+ POST /dashboard 200 in 197ms (next.js: 5ms, application-code: 192ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ GET /dashboard 200 in 1408ms (next.js: 257ms, application-code: 1151ms)
+ GET /dashboard 200 in 952ms (next.js: 9ms, application-code: 944ms)
+ GET /dashboard 200 in 913ms (next.js: 146ms, application-code: 767ms)
+ GET /dashboard 200 in 959ms (next.js: 80ms, application-code: 879ms)
+ GET /dashboard 200 in 958ms (next.js: 191ms, application-code: 767ms)
+ GET /dashboard 200 in 958ms (next.js: 227ms, application-code: 731ms)
+ GET /dashboard 200 in 846ms (next.js: 9ms, application-code: 837ms)
+ GET /dashboard 200 in 838ms (next.js: 19ms, application-code: 819ms)
+ GET /dashboard 200 in 707ms (next.js: 9ms, application-code: 698ms)
+ GET /dashboard 200 in 709ms (next.js: 49ms, application-code: 660ms)
+ GET /dashboard 200 in 710ms (next.js: 172ms, application-code: 538ms)
+ GET /dashboard 200 in 711ms (next.js: 204ms, application-code: 507ms)
+ GET /dashboard 200 in 871ms (next.js: 5ms, application-code: 865ms)
+ GET /dashboard 200 in 851ms (next.js: 14ms, application-code: 837ms)
+ GET /dashboard 200 in 738ms (next.js: 21ms, application-code: 716ms)
+ GET /dashboard 200 in 738ms (next.js: 89ms, application-code: 649ms)
+ GET /dashboard 200 in 742ms (next.js: 54ms, application-code: 688ms)
+ GET /dashboard 200 in 742ms (next.js: 156ms, application-code: 586ms)
+ GET /dashboard 200 in 888ms (next.js: 6ms, application-code: 882ms)
+ GET /dashboard 200 in 867ms (next.js: 15ms, application-code: 852ms)
+ GET /dashboard 200 in 753ms (next.js: 12ms, application-code: 741ms)
+ GET /dashboard 200 in 768ms (next.js: 79ms, application-code: 689ms)
+ GET /dashboard 200 in 770ms (next.js: 47ms, application-code: 723ms)
+ GET /dashboard 200 in 768ms (next.js: 164ms, application-code: 603ms)
+ GET /dashboard 200 in 316ms (next.js: 5ms, application-code: 311ms)
+ GET /dashboard 200 in 235ms (next.js: 16ms, application-code: 219ms)
+✓ Compiled in 134ms
+ GET /dashboard 200 in 1214ms (next.js: 259ms, application-code: 955ms)
+✓ Compiled in 120ms
+ GET /dashboard 200 in 891ms (next.js: 247ms, application-code: 644ms)
+ POST /dashboard 200 in 157ms (next.js: 5ms, application-code: 152ms)
+  └─ ƒ switchDemoProfile({}) in 16ms app/actions/demo.ts
+ GET /dashboard 200 in 312ms (next.js: 7ms, application-code: 304ms)
+ GET /api/geocode/reverse?lat=-6.169320&lng=106.789833 200 in 616ms (next.js: 207ms, application-code: 410ms)
+ GET /dashboard 200 in 325ms (next.js: 4ms, application-code: 321ms)
+ POST /dashboard 200 in 142ms (next.js: 5ms, application-code: 138ms)
+  └─ ƒ switchDemoProfile({}) in 11ms app/actions/demo.ts
+ GET /pickups/4aad522f-0283-4dc9-b3cd-43b22a77d60d 200 in 145ms (next.js: 81ms, application-code: 64ms)
+ POST /dashboard 200 in 158ms (next.js: 4ms, application-code: 154ms)
+  └─ ƒ switchDemoProfile({}) in 12ms app/actions/demo.ts
+ POST /dashboard 200 in 149ms (next.js: 4ms, application-code: 144ms)
+  └─ ƒ switchDemoProfile({}) in 5ms app/actions/demo.ts
+ POST /dashboard 200 in 142ms (next.js: 4ms, application-code: 138ms)
+  └─ ƒ switchDemoProfile({}) in 14ms app/actions/demo.ts
+ POST /dashboard 200 in 149ms (next.js: 5ms, application-code: 144ms)
+  └─ ƒ switchDemoProfile({}) in 1ms app/actions/demo.ts
+ POST /dashboard 200 in 149ms (next.js: 6ms, application-code: 143ms)
+  └─ ƒ switchDemoProfile({}) in 17ms app/actions/demo.ts
+ POST /dashboard 200 in 159ms (next.js: 5ms, application-code: 154ms)
+  └─ ƒ switchDemoProfile({}) in 17ms app/actions/demo.ts
+ GET /dashboard 200 in 15ms (next.js: 5ms, application-code: 10ms)
+ GET /dashboard 200 in 142ms (next.js: 5ms, application-code: 137ms)
+ GET / 200 in 574ms (next.js: 218ms, application-code: 356ms)
+ GET / 200 in 160ms (next.js: 7ms, application-code: 153ms)
+ GET /showcase?mode=present 200 in 670ms (next.js: 358ms, application-code: 312ms)
+ GET /login 200 in 370ms (next.js: 217ms, application-code: 153ms)
+ GET /leaderboard 200 in 497ms (next.js: 245ms, application-code: 252ms)
