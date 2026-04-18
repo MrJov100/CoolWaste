@@ -54,6 +54,40 @@ export async function getLandingStats() {
   ];
 }
 
+export async function getLeaderboardData() {
+  const [entries, stats] = await Promise.all([
+    db.profile.findMany({
+      where: { role: Role.USER },
+      include: {
+        submittedPickups: { where: { status: PickupStatus.SELESAI } },
+        earnedTransactions: true,
+      },
+      take: 20,
+    }),
+    db.pickupRequest.aggregate({
+      where: { status: PickupStatus.SELESAI },
+      _sum: { actualWeightKg: true },
+      _count: { id: true },
+    }),
+  ]);
+
+  const leaderboard: LeaderboardEntry[] = entries
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      location: item.address ?? "Wilayah belum diisi",
+      totalWeight: item.submittedPickups.reduce((sum, p) => sum + (p.actualWeightKg ?? 0), 0),
+      totalIncome: item.earnedTransactions.reduce((sum, t) => sum + t.amount, 0),
+    }))
+    .sort((a, b) => b.totalWeight - a.totalWeight || b.totalIncome - a.totalIncome);
+
+  return {
+    leaderboard,
+    totalWeight: stats._sum.actualWeightKg ?? 0,
+    totalPickups: stats._count.id,
+  };
+}
+
 export async function getDashboardData(profileId: string): Promise<DashboardData> {
   await expireTimedOutPendingPickups();
   const profile = await db.profile.findUniqueOrThrow({

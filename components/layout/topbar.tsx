@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Leaf, LogOut, Settings, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Leaf, MessageCircle, Trophy } from "lucide-react";
 
-import { signOut } from "@/app/(auth)/actions";
 import { FloatingChatButton } from "@/components/chat/floating-chat-button";
 import { DevAccountSwitcher } from "@/components/layout/dev-account-switcher";
 import { DemoSwitcher } from "@/components/layout/demo-switcher";
+import { MobileNav, NavUserDropdown } from "@/components/layout/nav-dropdown";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ROLE_LABEL } from "@/lib/constants";
 import { countUnreadChatsForProfile } from "@/lib/data/chat";
 import { isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
@@ -18,99 +17,103 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
       ? await countUnreadChatsForProfile(profile.id, profile.role)
       : 0;
 
+  const roleLabel = profile ? ROLE_LABEL[profile.role] : "";
+
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/85 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3 text-white">
-          <div className="rounded-2xl bg-emerald-500/15 p-2 text-emerald-300">
+    <header className="sticky top-0 z-40 border-b border-white/[0.07] bg-slate-950/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+
+        {/* ── Logo ── */}
+        <Link href="/" className="flex items-center gap-2.5 text-white">
+          <div className="rounded-xl bg-emerald-500/15 p-2 text-emerald-400">
             <Leaf className="h-5 w-5" />
           </div>
-          <div>
-            <p className="font-semibold">Cool Waste</p>
-            <p className="text-xs text-slate-400">Competition Platform</p>
-          </div>
+          <span
+            className="text-lg font-bold tracking-tight"
+            style={{ fontFamily: "var(--font-sora), sans-serif" }}
+          >
+            CoolWaste
+          </span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        {/* ── Desktop Navigation ── */}
+        <nav className="hidden items-center gap-1 lg:flex">
           {profile ? (
             <>
-              {isDevAccountSwitcherEnabled() ? <DevAccountSwitcher currentEmail={profile.email} /> : null}
+              {/* Dev / Demo tools – only visible in dev */}
+              {isDevAccountSwitcherEnabled() ? (
+                <DevAccountSwitcher currentEmail={profile.email} />
+              ) : null}
               <DemoSwitcher currentEmail={profile.email} />
-              <Link href="/leaderboard">
-                <Button variant="ghost" size="sm">
-                  Leaderboard
-                </Button>
-              </Link>
-              <Badge variant="emerald">
-                <ShieldCheck className="mr-2 h-3.5 w-3.5" />
-                {ROLE_LABEL[profile.role]}
-              </Badge>
+
               <Link href="/dashboard">
-                <Button variant="secondary" size="sm">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
+
               <Link href="/chat">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <MessageCircle className="h-4 w-4" />
                   Chat
-                  {unreadChats > 0 ? (
-                    <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] text-emerald-950">
+                  {unreadChats > 0 && (
+                    <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-emerald-950">
                       {unreadChats}
                     </span>
-                  ) : null}
+                  )}
                 </Button>
               </Link>
-              <Link href="/settings">
-                <Button variant="ghost" size="sm">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
+
+              <Link href="/leaderboard">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Trophy className="h-4 w-4" />
+                  Leaderboard
                 </Button>
               </Link>
-              <Link href="/dashboard/demo">
-                <Button variant="ghost" size="sm">
-                  Demo View
-                </Button>
-              </Link>
-              <form action={signOut}>
-                <Button variant="ghost" size="sm">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Keluar
-                </Button>
-              </form>
+
+              {/* User dropdown (Pengaturan / Riwayat Pickup / Logout) */}
+              <div className="ml-2">
+                <NavUserDropdown
+                  name={profile.name}
+                  role={roleLabel}
+                  unreadChats={unreadChats}
+                />
+              </div>
             </>
           ) : (
             <>
               {isDevAccountSwitcherEnabled() ? <DevAccountSwitcher /> : null}
+
               <Link href="/leaderboard">
                 <Button variant="ghost" size="sm">
                   Leaderboard
                 </Button>
               </Link>
               <Link href="/login">
-                <Button variant="ghost" size="sm">
+                <Button variant="outline" size="sm">
                   Login
                 </Button>
               </Link>
               <Link href="/signup">
-                <Button variant="secondary" size="sm">
-                  Daftar
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button size="sm">
-                  Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard/demo">
-                <Button variant="ghost" size="sm">
-                  Lihat Demo
-                </Button>
+                <Button size="sm">Daftar Sekarang</Button>
               </Link>
             </>
           )}
+        </nav>
+
+        {/* ── Mobile Navigation (hamburger) ── */}
+        <div className="relative lg:hidden">
+          <MobileNav
+            isLoggedIn={!!profile}
+            name={profile?.name}
+            role={roleLabel}
+            unreadChats={unreadChats}
+          />
         </div>
       </div>
+
+      {/* Floating chat bubble for USER / COLLECTOR */}
       {profile && (profile.role === "USER" || profile.role === "COLLECTOR") ? (
         <FloatingChatButton unreadChats={unreadChats} />
       ) : null}
