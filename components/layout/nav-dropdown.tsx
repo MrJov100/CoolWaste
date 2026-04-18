@@ -11,6 +11,7 @@ import {
   Menu,
   MessageCircle,
   Settings,
+  Star,
   Trophy,
   User,
   X,
@@ -93,6 +94,22 @@ export function NavUserDropdown({ name, role, unreadChats = 0 }: NavUserDropdown
                   </span>
                 )}
               </Link>
+              <Link
+                href="/ratings"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <Star className="h-4 w-4 text-slate-400" />
+                Rating Pickup
+              </Link>
+              <Link
+                href="/transactions"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <Trophy className="h-4 w-4 text-slate-400" />
+                Transaksi
+              </Link>
             </nav>
 
             {/* Logout */}
@@ -168,6 +185,8 @@ export function MobileNav({ isLoggedIn, name, role, unreadChats = 0 }: MobileNav
                 <NavItem href="/leaderboard" icon={Trophy} label="Leaderboard" onClick={close} />
                 <NavItem href="/settings" icon={Settings} label="Pengaturan" onClick={close} />
                 <NavItem href="/pickups" icon={Clock} label="Riwayat Pickup" onClick={close} />
+                <NavItem href="/ratings" icon={Star} label="Rating Pickup" onClick={close} />
+                <NavItem href="/transactions" icon={Trophy} label="Transaksi" onClick={close} />
 
                 <div className="pt-2">
                   <form action={signOut}>

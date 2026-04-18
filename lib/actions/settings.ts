@@ -362,3 +362,35 @@ export async function getSettingsActorRole() {
   const profile = await requireProfile();
   return profile.role;
 }
+
+export async function deleteUserAccount() {
+  const profile = await requireRole(Role.USER);
+
+  await db.$transaction(async (tx) => {
+    await tx.chatMessage.deleteMany({
+      where: { senderId: profile.id },
+    });
+    await tx.chatThread.deleteMany({
+      where: { OR: [{ userId: profile.id }, { collectorId: profile.id }] },
+    });
+    await tx.rating.deleteMany({
+      where: { OR: [{ fromUserId: profile.id }, { toUserId: profile.id }] },
+    });
+    await tx.transaction.deleteMany({
+      where: { userId: profile.id },
+    });
+    await tx.pickupRequest.deleteMany({
+      where: { userId: profile.id, status: { in: ["MENUNGGU_MATCHING", "DIBATALKAN"] } },
+    });
+    await tx.savedAddress.deleteMany({
+      where: { profileId: profile.id },
+    });
+    await tx.profile.delete({
+      where: { id: profile.id },
+    });
+  });
+
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+}

@@ -1,18 +1,23 @@
 import Link from "next/link";
 import { Role } from "@prisma/client";
+import {
+  ArrowRight,
+  BarChart3,
+  Clock,
+  History,
+  Leaf,
+  Package,
+  Settings,
+  Star,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
 
-import { HighlightGrid } from "@/components/dashboard/highlight-grid";
 import { PickupAlertDialog } from "@/components/dashboard/pickup-alert-dialog";
 import { MarketplaceListingsGrid } from "@/components/dashboard/marketplace-listings-grid";
 import { MarketplaceOfferList } from "@/components/dashboard/marketplace-offer-list";
-import { StoryCard } from "@/components/dashboard/story-card";
-import { SummaryCard } from "@/components/dashboard/summary-card";
 import { WasteChart } from "@/components/dashboard/waste-chart";
 import { Topbar } from "@/components/layout/topbar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { StatusBanner } from "@/components/ui/status-banner";
 import { requireRole } from "@/lib/auth";
 import { getDashboardData } from "@/lib/data/dashboard";
 import { formatCurrency } from "@/lib/utils";
@@ -25,8 +30,18 @@ export default async function UserDashboardPage() {
     return null;
   }
 
+  const { summary, myPickups, availableCollectors, savedAddresses, marketDemand } = dashboard;
+
+  const summaryIcons = [Wallet, Package, Clock, TrendingUp];
+  const summaryColors = [
+    "text-emerald-400 bg-emerald-500/10",
+    "text-blue-400 bg-blue-500/10",
+    "text-amber-400 bg-amber-500/10",
+    "text-purple-400 bg-purple-500/10",
+  ];
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-950">
       <Topbar
         profile={{
           id: profile.id,
@@ -38,81 +53,123 @@ export default async function UserDashboardPage() {
         }}
       />
 
-      <main className="mx-auto max-w-7xl px-6 pb-20 pt-10">
-        <PickupAlertDialog pickups={dashboard.myPickups} />
-        <section className="mb-6">
-          <StatusBanner
-            tone="info"
-            title="Mode pickup user aktif"
-            message="User cukup pilih jenis sampah, estimasi berat, alamat, dan slot waktu. Sistem akan auto matching ke collector terdekat lalu menggabungkannya ke batch pickup yang efisien."
-          />
-        </section>
+      <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6">
+        <PickupAlertDialog pickups={myPickups} />
 
-        <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3">
-            <Badge variant="emerald" className="w-fit">
-              USER pickup flow
-            </Badge>
-            <h1 className="text-4xl font-semibold text-white" style={{ fontFamily: "var(--font-sora), sans-serif" }}>
-              Halo, {profile.name}. Jual sampahmu cepat, lalu biarkan sistem mengatur matching dan batching.
-            </h1>
-            <p className="max-w-3xl text-slate-300">
-              Form dibuat singkat untuk request pickup kurang dari satu menit, sementara status pickup tetap transparan dari menunggu matching sampai selesai dibayar.
-            </p>
+        {/* ── Hero greeting ── */}
+        <section className="mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-400">Selamat datang kembali 👋</p>
+              <h1
+                className="mt-1 text-3xl font-bold text-white sm:text-4xl"
+                style={{ fontFamily: "var(--font-sora), sans-serif" }}
+              >
+                {profile.name}
+              </h1>
+              <p className="mt-2 max-w-xl text-slate-400">
+                Jual sampah dalam kurang dari 1 menit. Pilih jenis, berat, lokasi — sistem otomatis matching ke collector terdekat.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/pickups"
+                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
+              >
+                <History className="h-4 w-4" /> Riwayat Pickup
+              </Link>
+              <Link
+                href="/transactions"
+                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
+              >
+                <BarChart3 className="h-4 w-4" /> Transaksi
+              </Link>
+              <Link
+                href="/settings"
+                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
+              >
+                <Settings className="h-4 w-4" /> Pengaturan
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="mt-6 flex flex-wrap gap-3">
-          <Link href="/pickups">
-            <Button variant="secondary">Aktivitas Pickup</Button>
-          </Link>
-          <Link href="/transactions">
-            <Button variant="secondary">Riwayat Transaksi</Button>
-          </Link>
-          <Link href="/dashboard/demo">
-            <Button variant="outline">Buka Demo View</Button>
-          </Link>
+        {/* ── Summary metrics ── */}
+        <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {summary.map((metric, i) => {
+            const Icon = summaryIcons[i] ?? Leaf;
+            const colorClass = summaryColors[i] ?? "text-slate-400 bg-slate-500/10";
+            const [iconColor, bgColor] = colorClass.split(" ");
+            return (
+              <div
+                key={metric.label}
+                className="rounded-3xl border border-white/10 bg-slate-900/60 p-4 backdrop-blur-sm"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs text-slate-500">{metric.label}</p>
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${bgColor}`}>
+                    <Icon className={`h-4 w-4 ${iconColor}`} />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-white">{metric.value}</p>
+                <p className="mt-1 text-xs text-slate-500 line-clamp-2">{metric.hint}</p>
+              </div>
+            );
+          })}
         </section>
 
-        <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {dashboard.summary.map((metric) => (
-            <SummaryCard key={metric.label} metric={metric} />
+        {/* ── Quick links ── */}
+        <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { href: "/pickups", icon: Package, label: "Riwayat Pickup", desc: "Pantau status request" },
+            { href: "/transactions", icon: Wallet, label: "Transaksi", desc: "Riwayat pembayaran" },
+            { href: "/ratings", icon: Star, label: "Rating Saya", desc: "Review collector" },
+            { href: "/settings", icon: Settings, label: "Pengaturan", desc: "Edit profil & alamat" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex flex-col gap-2 rounded-3xl border border-white/10 bg-slate-900/40 p-4 transition-all hover:border-emerald-500/30 hover:bg-slate-900/80"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-800 transition-all group-hover:bg-emerald-500/15">
+                <item.icon className="h-5 w-5 text-slate-400 transition-all group-hover:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">{item.label}</p>
+                <p className="text-xs text-slate-500">{item.desc}</p>
+              </div>
+              <ArrowRight className="ml-auto h-4 w-4 text-slate-600 transition-all group-hover:translate-x-1 group-hover:text-emerald-400" />
+            </Link>
           ))}
         </section>
 
-        <section className="mt-8">
+        {/* ── Request Pickup + Collector Cards ── */}
+        <section className="mb-8">
           <MarketplaceListingsGrid
-            title="Buat request pickup"
-            description="Collector yang terverifikasi dan siap dipakai untuk auto matching"
-            collectors={dashboard.availableCollectors}
-            savedAddresses={dashboard.savedAddresses}
+            title="Buat Request Pickup"
+            description="Collector terverifikasi yang siap dijadwalkan via auto matching"
+            collectors={availableCollectors}
+            savedAddresses={savedAddresses}
           />
         </section>
 
-        <section className="mt-8 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        {/* ── My Pickups + Waste Chart ── */}
+        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <MarketplaceOfferList
-            title="Request pickup saya"
-            description="Pantau pickup yang masih menunggu matching, sudah dijadwalkan, atau selesai dibayar"
-            offers={dashboard.myPickups}
+            title="Request Pickup Saya"
+            description="Pantau status dari menunggu matching hingga selesai dibayar"
+            offers={myPickups}
             hidePendingCommercials
           />
-          <WasteChart data={dashboard.marketDemand} />
-        </section>
 
-        <section className="mt-8">
-          <HighlightGrid
-            title="Ringkasan pickup"
-            description="Sorotan cepat agar user tahu kondisi request mereka"
-            items={dashboard.marketplaceHighlights}
-          />
-        </section>
-
-        <section className="mt-8">
-          <StoryCard
-            title="Progress pengguna"
-            description="Poin singkat yang membuat perjalanan pickup terasa jelas"
-            points={dashboard.achievements}
-          />
+          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
+            <div className="mb-4">
+              <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Statistik</p>
+              <h2 className="mt-1 text-xl font-semibold text-white">Komposisi Sampah</h2>
+              <p className="mt-0.5 text-sm text-slate-400">Breakdown jenis sampah yang sudah kamu jual</p>
+            </div>
+            <WasteChart data={marketDemand} />
+          </div>
         </section>
       </main>
     </div>

@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Role } from "@prisma/client";
-import { PackageSearch } from "lucide-react";
+import { ArrowLeft, MessageCircle, Package } from "lucide-react";
 
 import { Topbar } from "@/components/layout/topbar";
 import { PickupChatPanel } from "@/components/chat/pickup-chat-panel";
 import { PickupDetailCard } from "@/components/records/pickup-detail-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { requireProfile } from "@/lib/auth";
 import { getChatThreadForPickup } from "@/lib/data/chat";
 import { getPickupDetailForProfile } from "@/lib/data/records";
@@ -35,7 +33,7 @@ export default async function PickupDetailPage({
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-950">
       <Topbar
         profile={{
           id: profile.id,
@@ -47,32 +45,43 @@ export default async function PickupDetailPage({
         }}
       />
 
-      <main className="mx-auto max-w-7xl px-6 pb-24 pt-10">
-        <section className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div className="space-y-3">
-            <Badge variant="emerald" className="w-fit">
-              <PackageSearch className="mr-2 h-3.5 w-3.5" />
-              Pickup detail
-            </Badge>
-            <h1 className="text-4xl font-semibold text-white" style={{ fontFamily: "var(--font-sora), sans-serif" }}>
-              Detail request pickup
-            </h1>
-            <p className="max-w-2xl text-slate-300">
-              Satu record pickup menampilkan user, collector yang menangani, lokasi, slot, foto referensi, dan hasil
-              penimbangan akhir.
-            </p>
+      <main className="mx-auto max-w-5xl px-4 pb-24 pt-8 sm:px-6">
+        {/* Header */}
+        <section className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/pickups"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 text-slate-400 transition-all hover:border-white/20 hover:text-white"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-emerald-400" />
+                <h1
+                  className="text-2xl font-bold text-white"
+                  style={{ fontFamily: "var(--font-sora), sans-serif" }}
+                >
+                  Detail Pickup
+                </h1>
+              </div>
+              <p className="mt-0.5 text-sm text-slate-400">#{pickup.requestNo}</p>
+            </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {chatThread ? (
-              <Link href="#pickup-chat">
-                <Button variant="secondary">Buka Chat</Button>
+              <Link
+                href="#pickup-chat"
+                className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-950/20 px-4 py-2.5 text-sm text-amber-300 transition-all hover:bg-amber-950/40"
+              >
+                <MessageCircle className="h-4 w-4" /> Buka Chat
               </Link>
             ) : null}
-            <Link href="/transactions">
-              <Button variant="outline">Lihat transaksi</Button>
-            </Link>
-            <Link href="/pickups">
-              <Button variant="secondary">Kembali ke Aktivitas</Button>
+            <Link
+              href="/pickups"
+              className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-400 transition-all hover:border-white/20 hover:text-slate-200"
+            >
+              Kembali ke Riwayat
             </Link>
           </div>
         </section>
@@ -82,7 +91,10 @@ export default async function PickupDetailPage({
           canNavigate={profile.role === Role.COLLECTOR}
           hidePendingCommercials={profile.role === Role.USER}
         />
-        <PickupChatPanel thread={chatThread} profile={profile} />
+
+        <div className="mt-6">
+          <PickupChatPanel thread={chatThread} profile={profile} />
+        </div>
       </main>
     </div>
   );

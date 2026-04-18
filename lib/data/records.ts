@@ -251,6 +251,27 @@ export async function getPickupDetailForProfile({
   } satisfies PickupDetailData;
 }
 
+export async function getRatingsForUser(profileId: string) {
+  const completedPickups = await db.pickupRequest.findMany({
+    where: { userId: profileId, status: "SELESAI", collectorId: { not: null } },
+    include: {
+      collector: { select: { name: true } },
+      ratings: { where: { fromUserId: profileId } },
+    },
+    orderBy: { completedAt: "desc" },
+    take: 30,
+  });
+
+  return completedPickups.map((pickup) => ({
+    pickupId: pickup.id,
+    requestNo: pickup.requestNo,
+    wasteType: pickup.wasteType,
+    collectorName: pickup.collector?.name ?? null,
+    completedAt: pickup.completedAt,
+    rating: pickup.ratings[0] ?? null,
+  }));
+}
+
 export async function getPickupStatusOptions() {
   return [
     PickupStatus.MENUNGGU_MATCHING,
