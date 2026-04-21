@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ChevronDown,
   Clock,
+  Flag,
   LayoutDashboard,
   Leaf,
   LogOut,
@@ -110,6 +111,14 @@ export function NavUserDropdown({ name, role, unreadChats = 0 }: NavUserDropdown
                 <Trophy className="h-4 w-4 text-slate-400" />
                 Transaksi
               </Link>
+              <Link
+                href="/my-reports"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+              >
+                <Flag className="h-4 w-4 text-slate-400" />
+                Laporan Saya
+              </Link>
             </nav>
 
             {/* Logout */}
@@ -187,6 +196,7 @@ export function MobileNav({ isLoggedIn, name, role, unreadChats = 0 }: MobileNav
                 <NavItem href="/pickups" icon={Clock} label="Riwayat Pickup" onClick={close} />
                 <NavItem href="/ratings" icon={Star} label="Rating Pickup" onClick={close} />
                 <NavItem href="/transactions" icon={Trophy} label="Transaksi" onClick={close} />
+                <NavItem href="/my-reports" icon={Flag} label="Laporan Saya" onClick={close} />
 
                 <div className="pt-2">
                   <form action={signOut}>

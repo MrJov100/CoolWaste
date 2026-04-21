@@ -78,7 +78,7 @@ export default async function ChatPage({
         <ChatShell
           threads={normalizedThreads}
           activeThread={activeThread}
-          profile={{ id: profile.id, role: profile.role }}
+          profile={{ id: profile.id, role: profile.role, name: profile.name }}
         />
       </main>
     </div>

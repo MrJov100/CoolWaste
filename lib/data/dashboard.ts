@@ -179,15 +179,19 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
 
   const waitingCount = myPickups.filter((item) => item.status === PickupStatus.MENUNGGU_MATCHING).length;
   const scheduledCount = myPickups.filter((item) => item.status === PickupStatus.TERJADWAL).length;
+  const inTransitCount = myPickups.filter((item) => item.status === PickupStatus.DALAM_PERJALANAN).length;
   const completedCount = myPickups.filter((item) => item.status === PickupStatus.SELESAI).length;
+  const ongoingPickups = myPickups.filter((item) =>
+    item.status === PickupStatus.MENUNGGU_MATCHING ||
+    item.status === PickupStatus.TERJADWAL ||
+    item.status === PickupStatus.DALAM_PERJALANAN
+  );
 
   return {
     role: "USER",
     profile: toProfileRecord(profile),
     summary: [
-      metric("Saldo aktif", formatCurrency(profile.saldo), "saldo masuk setelah pickup diselesaikan dan dibayar"),
-      metric("Alamat tersimpan", `${savedAddresses.length}`, "pilih alamat cepat saat membuat request pickup"),
-      metric("Pickup aktif", `${waitingCount + scheduledCount}`, "request yang masih menunggu atau sudah dijadwalkan"),
+      metric("Pickup aktif", `${waitingCount + scheduledCount + inTransitCount}`, "request yang masih menunggu, dijadwalkan, atau dalam perjalanan"),
       metric("Income berhasil", formatCurrency(incomeSum._sum.amount ?? 0), "total pemasukan dari pickup selesai"),
     ],
     savedAddresses: savedAddresses.map<SavedAddressOption>((address) => ({
@@ -210,6 +214,7 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
       verificationState: collector.verificationState,
     })),
     myPickups: myPickups.map(toPickupCard),
+    ongoingPickups: ongoingPickups.map(toPickupCard),
     marketDemand: completedByType.map<WasteBreakdownPoint>((item) => ({
       type: item.wasteType,
       totalWeight: item._sum.actualWeightKg ?? 0,

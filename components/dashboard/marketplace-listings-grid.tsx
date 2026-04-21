@@ -16,7 +16,6 @@ import {
   Package,
   Scale,
   Sparkles,
-  Star,
   Truck,
   Upload,
   X,
@@ -453,10 +452,32 @@ export function MarketplaceListingsGrid({
 
       {/* ── Collector Cards ── */}
       <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
-        <div className="mb-6">
+        <div className="mb-5">
           <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Collector Tersedia</p>
           <h2 className="mt-1 text-xl font-semibold text-white">Collector Siap Matching</h2>
-          <p className="mt-1 text-sm text-slate-400">{description}</p>
+          {/* Range harga per kategori */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {WASTE_TYPE_OPTIONS.map((type) => {
+              const key = type.toLowerCase() as keyof typeof PRICE_PER_KG;
+              const minPrice = PRICE_PER_KG[key];
+              const maxPrice = Math.round(minPrice * 1.4);
+              return (
+                <span
+                  key={type}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-medium ${
+                    key === selectedWasteKey
+                      ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/30"
+                      : "bg-white/[0.04] text-slate-400"
+                  }`}
+                >
+                  <span>{WASTE_ICONS[key]}</span>
+                  <span>{titleCase(type)}</span>
+                  <span className="text-slate-500">·</span>
+                  <span>{formatCurrency(minPrice)}–{formatCurrency(maxPrice)}/kg</span>
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -486,7 +507,6 @@ function CollectorCard({
   collector: CollectorServiceCard;
   selectedWasteType: keyof typeof PRICE_PER_KG;
 }) {
-  const price = collector.wastePricing[selectedWasteType.toUpperCase() as keyof typeof collector.wastePricing];
   const capacityPct = collector.dailyCapacityKg > 0
     ? Math.min((collector.remainingCapacityKg / collector.dailyCapacityKg) * 100, 100)
     : 0;
@@ -494,38 +514,26 @@ function CollectorCard({
     capacityPct > 60 ? "bg-emerald-500" : capacityPct > 30 ? "bg-amber-500" : "bg-red-500";
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 transition-all hover:border-white/20 hover:bg-white/[0.05]">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-xl">
-            <Truck className="h-5 w-5 text-emerald-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-white">{collector.collectorName}</h3>
-              <Badge variant="emerald" className="text-xs">Verified</Badge>
-            </div>
-            <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
-              <MapPin className="h-3 w-3" />
-              {collector.serviceAreaLabel}
-            </p>
-          </div>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:border-white/20 hover:bg-white/[0.05]">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+          <Truck className="h-4 w-4 text-emerald-400" />
         </div>
-        <div className="text-right">
-          {price ? (
-            <p className="text-base font-semibold text-emerald-300">{formatCurrency(price)}<span className="text-xs text-slate-500">/kg</span></p>
-          ) : (
-            <p className="text-xs text-slate-500">Harga ikut kategori</p>
-          )}
-          <p className="mt-0.5 flex items-center justify-end gap-1 text-xs text-slate-500">
-            <Star className="h-3 w-3 text-amber-400" />
-            {collector.serviceRadiusKm.toFixed(0)} km radius
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-white">{collector.collectorName}</h3>
+            <Badge variant="emerald" className="shrink-0 text-xs">Verified</Badge>
+          </div>
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{collector.serviceAreaLabel}</span>
+            <span className="ml-1 shrink-0 text-slate-600">· {collector.serviceRadiusKm.toFixed(0)} km</span>
           </p>
         </div>
       </div>
 
       {/* Kapasitas */}
-      <div className="mt-4">
+      <div className="mt-3">
         <div className="mb-1.5 flex items-center justify-between">
           <p className="flex items-center gap-1 text-xs text-slate-500">
             <Scale className="h-3 w-3" /> Kapasitas tersisa
@@ -542,15 +550,15 @@ function CollectorCard({
         </div>
       </div>
 
-      {/* Waste types */}
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      {/* Waste types yang diterima */}
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {collector.acceptedWasteTypes.map((type) => {
           const key = type.toLowerCase() as keyof typeof PRICE_PER_KG;
           const isActive = key === selectedWasteType;
           return (
             <span
               key={type}
-              className={`inline-flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-medium ${
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium ${
                 isActive
                   ? "bg-emerald-500/20 text-emerald-300"
                   : "bg-white/[0.04] text-slate-400"
@@ -560,34 +568,6 @@ function CollectorCard({
             </span>
           );
         })}
-      </div>
-
-      {/* Slot harga per kategori */}
-      <div className="mt-3 grid grid-cols-2 gap-1.5">
-        {collector.acceptedWasteTypes.map((type) => {
-          const key = type.toUpperCase() as keyof typeof collector.wastePricing;
-          const p = collector.wastePricing[key];
-          if (!p) return null;
-          return (
-            <div key={type} className="rounded-xl bg-slate-950/40 px-2.5 py-1.5 text-xs">
-              <span className="text-slate-500">{titleCase(type)}: </span>
-              <span className="font-medium text-slate-300">{formatCurrency(p)}/kg</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Slot waktu */}
-      <div className="mt-3 flex items-center gap-1.5">
-        <Clock className="h-3 w-3 text-slate-500" />
-        <div className="flex gap-1">
-          {["PAGI", "SIANG", "SORE"].map((s) => (
-            <span key={s} className="rounded-lg bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
-              {SLOT_ICONS[s]}
-            </span>
-          ))}
-        </div>
-        <span className="text-xs text-slate-500">Semua slot tersedia</span>
       </div>
     </div>
   );

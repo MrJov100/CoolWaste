@@ -272,6 +272,42 @@ export async function getRatingsForUser(profileId: string) {
   }));
 }
 
+export async function getPickupByRequestNo(requestNo: string, userId: string) {
+  return db.pickupRequest.findFirst({
+    where: { requestNo, userId },
+    select: {
+      id: true,
+      requestNo: true,
+      wasteType: true,
+      status: true,
+      collectorId: true,
+      collector: { select: { id: true, name: true } },
+    },
+  });
+}
+
+export async function getMyReports(profileId: string) {
+  return db.chatReport.findMany({
+    where: { reportedByUserId: profileId },
+    select: {
+      id: true,
+      reason: true,
+      status: true,
+      adminDecision: true,
+      createdAt: true,
+      reviewedAt: true,
+      reportedUser: { select: { name: true } },
+      thread: {
+        select: {
+          pickupRequest: { select: { requestNo: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+}
+
 export async function getPickupStatusOptions() {
   return [
     PickupStatus.MENUNGGU_MATCHING,

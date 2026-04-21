@@ -662,6 +662,47 @@ export async function submitRating(pickupRequestId: string, formData: FormData) 
   revalidateMarketplaceViews();
 }
 
+export async function submitCollectorRating(pickupRequestId: string, formData: FormData) {
+  const collector = await requireRole(Role.COLLECTOR);
+  await expireTimedOutPendingPickups();
+
+  const parsed = submitRatingSchema.safeParse({
+    score: formData.get("score"),
+    comment: formData.get("comment") || undefined,
+  });
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Data rating tidak valid.");
+  }
+
+  const pickup = await db.pickupRequest.findUniqueOrThrow({
+    where: { id: pickupRequestId },
+    include: { ratings: true },
+  });
+
+  if (pickup.collectorId !== collector.id) {
+    throw new Error("Tidak punya akses untuk memberi rating pada pickup ini.");
+  }
+  if (pickup.status !== PickupStatus.SELESAI) {
+    throw new Error("Pickup belum selesai.");
+  }
+  if (pickup.ratings.some((r) => r.fromUserId === collector.id)) {
+    throw new Error("Anda sudah memberikan rating untuk pickup ini.");
+  }
+
+  await db.rating.create({
+    data: {
+      pickupRequestId: pickup.id,
+      fromUserId: collector.id,
+      toUserId: pickup.userId,
+      score: parsed.data.score,
+      comment: parsed.data.comment,
+    },
+  });
+
+  revalidateMarketplaceViews();
+}
+
 export async function cancelPickupRequest(pickupRequestId: string, formData: FormData) {
   const profile = await requireRole(Role.USER);
   await expireTimedOutPendingPickups();

@@ -77,15 +77,19 @@ export function MarketplaceOfferList({
   offers,
   mode = "viewer",
   hidePendingCommercials = false,
+  compact = false,
 }: {
   title: string;
   description: string;
   offers: PickupRequestCard[];
   mode?: "viewer" | "collector";
   hidePendingCommercials?: boolean;
+  compact?: boolean;
 }) {
+  const wrapper = compact ? "space-y-3" : "rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm";
   return (
-    <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
+    <div className={wrapper}>
+      {!compact && (
       <div className="mb-6 flex items-center justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Pickup Activity</p>
@@ -100,6 +104,7 @@ export function MarketplaceOfferList({
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
+      )}
 
       <div className="space-y-4">
         {offers.length ? (

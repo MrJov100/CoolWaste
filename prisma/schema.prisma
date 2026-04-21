@@ -217,11 +217,13 @@ model Rating {
   fromUserId       String
   toUserId         String
   score            Int
-  comment          String?
+  comment          String?       @db.VarChar(500)
   createdAt        DateTime      @default(now())
   pickupRequest    PickupRequest @relation(fields: [pickupRequestId], references: [id], onDelete: Cascade)
   fromUser         Profile       @relation("RatingsGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
   toUser           Profile       @relation("RatingsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([pickupRequestId, fromUserId])
 }
 
 model ChatThread {

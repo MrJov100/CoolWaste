@@ -223,6 +223,7 @@ export type UserDashboardData = DashboardBase & {
   savedAddresses: SavedAddressOption[];
   availableCollectors: CollectorServiceCard[];
   myPickups: PickupRequestCard[];
+  ongoingPickups: PickupRequestCard[];
   marketDemand: WasteBreakdownPoint[];
   marketplaceHighlights: HighlightStat[];
   achievements: string[];

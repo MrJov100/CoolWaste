@@ -3,13 +3,12 @@ import { Role } from "@prisma/client";
 import {
   ArrowRight,
   BarChart3,
-  Clock,
   History,
   Leaf,
   Package,
-  Settings,
   Star,
   TrendingUp,
+  Truck,
   Wallet,
 } from "lucide-react";
 
@@ -20,7 +19,6 @@ import { WasteChart } from "@/components/dashboard/waste-chart";
 import { Topbar } from "@/components/layout/topbar";
 import { requireRole } from "@/lib/auth";
 import { getDashboardData } from "@/lib/data/dashboard";
-import { formatCurrency } from "@/lib/utils";
 
 export default async function UserDashboardPage() {
   const profile = await requireRole(Role.USER);
@@ -30,13 +28,11 @@ export default async function UserDashboardPage() {
     return null;
   }
 
-  const { summary, myPickups, availableCollectors, savedAddresses, marketDemand } = dashboard;
+  const { summary, myPickups, ongoingPickups, availableCollectors, savedAddresses, marketDemand } = dashboard;
 
-  const summaryIcons = [Wallet, Package, Clock, TrendingUp];
+  const summaryIcons = [Package, TrendingUp];
   const summaryColors = [
-    "text-emerald-400 bg-emerald-500/10",
     "text-blue-400 bg-blue-500/10",
-    "text-amber-400 bg-amber-500/10",
     "text-purple-400 bg-purple-500/10",
   ];
 
@@ -84,18 +80,12 @@ export default async function UserDashboardPage() {
               >
                 <BarChart3 className="h-4 w-4" /> Transaksi
               </Link>
-              <Link
-                href="/settings"
-                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
-              >
-                <Settings className="h-4 w-4" /> Pengaturan
-              </Link>
             </div>
           </div>
         </section>
 
-        {/* ── Summary metrics ── */}
-        <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* ── Summary metrics (hanya 2: Pickup aktif & Income) ── */}
+        <section className="mb-8 grid grid-cols-2 gap-3">
           {summary.map((metric, i) => {
             const Icon = summaryIcons[i] ?? Leaf;
             const colorClass = summaryColors[i] ?? "text-slate-400 bg-slate-500/10";
@@ -118,13 +108,12 @@ export default async function UserDashboardPage() {
           })}
         </section>
 
-        {/* ── Quick links ── */}
-        <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* ── Quick links (tanpa Settings) ── */}
+        <section className="mb-8 grid grid-cols-3 gap-3">
           {[
             { href: "/pickups", icon: Package, label: "Riwayat Pickup", desc: "Pantau status request" },
             { href: "/transactions", icon: Wallet, label: "Transaksi", desc: "Riwayat pembayaran" },
             { href: "/ratings", icon: Star, label: "Rating Saya", desc: "Review collector" },
-            { href: "/settings", icon: Settings, label: "Pengaturan", desc: "Edit profil & alamat" },
           ].map((item) => (
             <Link
               key={item.href}
@@ -143,7 +132,7 @@ export default async function UserDashboardPage() {
           ))}
         </section>
 
-        {/* ── Request Pickup + Collector Cards ── */}
+        {/* ── Request Pickup (dominan, full-width) ── */}
         <section className="mb-8">
           <MarketplaceListingsGrid
             title="Buat Request Pickup"
@@ -153,23 +142,39 @@ export default async function UserDashboardPage() {
           />
         </section>
 
-        {/* ── My Pickups + Waste Chart ── */}
-        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <MarketplaceOfferList
-            title="Request Pickup Saya"
-            description="Pantau status dari menunggu matching hingga selesai dibayar"
-            offers={myPickups}
-            hidePendingCommercials
-          />
-
-          <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
-            <div className="mb-4">
-              <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Statistik</p>
-              <h2 className="mt-1 text-xl font-semibold text-white">Komposisi Sampah</h2>
-              <p className="mt-0.5 text-sm text-slate-400">Breakdown jenis sampah yang sudah kamu jual</p>
+        {/* ── Ongoing Pickups (dekat Request Pickup) ── */}
+        {ongoingPickups.length > 0 && (
+          <section className="mb-8">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-widest text-amber-400">Sedang Berlangsung</p>
+                  <h2 className="mt-1 text-xl font-semibold text-white">Pickup Aktif</h2>
+                  <p className="mt-0.5 text-sm text-slate-400">Pickup yang masih menunggu atau dalam perjalanan</p>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/10">
+                  <Truck className="h-5 w-5 text-amber-400" />
+                </div>
+              </div>
+              <MarketplaceOfferList
+                title=""
+                description=""
+                offers={ongoingPickups}
+                hidePendingCommercials
+                compact
+              />
             </div>
-            <WasteChart data={marketDemand} />
+          </section>
+        )}
+
+        {/* ── Waste Chart ── */}
+        <section className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
+          <div className="mb-4">
+            <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Statistik</p>
+            <h2 className="mt-1 text-xl font-semibold text-white">Komposisi Sampah</h2>
+            <p className="mt-0.5 text-sm text-slate-400">Breakdown jenis sampah yang sudah kamu jual</p>
           </div>
+          <WasteChart data={marketDemand} />
         </section>
       </main>
     </div>

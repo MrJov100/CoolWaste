@@ -12,13 +12,29 @@ async function syncThreadStatus(threadId: string) {
     return null;
   }
 
-  if (thread.expiresAt && thread.expiresAt.getTime() <= Date.now() && thread.status !== ChatThreadStatus.CLOSED) {
-    return db.chatThread.update({
-      where: { id: thread.id },
-      data: {
-        status: ChatThreadStatus.CLOSED,
-      },
-    });
+  if (thread.status === ChatThreadStatus.CLOSED) {
+    return thread;
+  }
+
+  const now = Date.now();
+
+  if (thread.expiresAt) {
+    const expiresMs = thread.expiresAt.getTime();
+    // Fully expired → CLOSED
+    if (expiresMs <= now) {
+      return db.chatThread.update({
+        where: { id: thread.id },
+        data: { status: ChatThreadStatus.CLOSED },
+      });
+    }
+    // 15 minutes or less remaining → READ_ONLY
+    const READ_ONLY_THRESHOLD_MS = 15 * 60 * 1000;
+    if (expiresMs - now <= READ_ONLY_THRESHOLD_MS && thread.status === ChatThreadStatus.ACTIVE) {
+      return db.chatThread.update({
+        where: { id: thread.id },
+        data: { status: ChatThreadStatus.READ_ONLY },
+      });
+    }
   }
 
   return thread;
