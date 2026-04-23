@@ -10,7 +10,6 @@ import {
   Leaf,
   LogOut,
   Menu,
-  MessageCircle,
   Settings,
   Star,
   Trophy,
@@ -25,10 +24,9 @@ import { signOut } from "@/app/(auth)/actions";
 type NavUserDropdownProps = {
   name: string;
   role: string;
-  unreadChats?: number;
 };
 
-export function NavUserDropdown({ name, role, unreadChats = 0 }: NavUserDropdownProps) {
+export function NavUserDropdown({ name, role }: NavUserDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -89,11 +87,6 @@ export function NavUserDropdown({ name, role, unreadChats = 0 }: NavUserDropdown
               >
                 <Clock className="h-4 w-4 text-slate-400" />
                 Riwayat Pickup
-                {unreadChats > 0 && (
-                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold text-emerald-950">
-                    {unreadChats}
-                  </span>
-                )}
               </Link>
               <Link
                 href="/ratings"
@@ -146,10 +139,9 @@ type MobileNavProps = {
   isLoggedIn: boolean;
   name?: string;
   role?: string;
-  unreadChats?: number;
 };
 
-export function MobileNav({ isLoggedIn, name, role, unreadChats = 0 }: MobileNavProps) {
+export function MobileNav({ isLoggedIn, name, role }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
@@ -184,13 +176,6 @@ export function MobileNav({ isLoggedIn, name, role, unreadChats = 0 }: MobileNav
                   </div>
                 )}
                 <NavItem href="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={close} />
-                <NavItem
-                  href="/chat"
-                  icon={MessageCircle}
-                  label="Chat"
-                  badge={unreadChats}
-                  onClick={close}
-                />
                 <NavItem href="/leaderboard" icon={Trophy} label="Leaderboard" onClick={close} />
                 <NavItem href="/settings" icon={Settings} label="Pengaturan" onClick={close} />
                 <NavItem href="/pickups" icon={Clock} label="Riwayat Pickup" onClick={close} />

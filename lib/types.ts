@@ -194,6 +194,8 @@ export type ChatThreadData = {
   canReport: boolean;
   hasUnread?: boolean;
   lastMessageAt?: Date | null;
+  /** Kapan lawan bicara (participant) terakhir membaca thread ini */
+  participantLastReadAt?: Date | null;
   messages: ChatMessageEntry[];
 };
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Role } from "@prisma/client";
-import { ArrowLeft, MessageCircle, Package } from "lucide-react";
+import { ArrowLeft, Package } from "lucide-react";
 
 import { Topbar } from "@/components/layout/topbar";
-import { PickupChatPanel } from "@/components/chat/pickup-chat-panel";
+import { OpenChatButton } from "@/components/chat/open-chat-button";
 import { PickupDetailCard } from "@/components/records/pickup-detail-card";
 import { requireProfile } from "@/lib/auth";
 import { getChatThreadForPickup } from "@/lib/data/chat";
@@ -70,12 +70,11 @@ export default async function PickupDetailPage({
           </div>
           <div className="flex gap-2">
             {chatThread ? (
-              <Link
-                href="#pickup-chat"
+              <OpenChatButton
+                threadId={chatThread.id}
+                label="Buka Chat"
                 className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-950/20 px-4 py-2.5 text-sm text-amber-300 transition-all hover:bg-amber-950/40"
-              >
-                <MessageCircle className="h-4 w-4" /> Buka Chat
-              </Link>
+              />
             ) : null}
             <Link
               href="/pickups"
@@ -91,10 +90,6 @@ export default async function PickupDetailPage({
           canNavigate={profile.role === Role.COLLECTOR}
           hidePendingCommercials={profile.role === Role.USER}
         />
-
-        <div className="mt-6">
-          <PickupChatPanel thread={chatThread} profile={profile} />
-        </div>
       </main>
     </div>
   );

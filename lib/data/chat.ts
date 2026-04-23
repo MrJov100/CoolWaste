@@ -103,29 +103,22 @@ export async function getChatThreadForPickup({
 
   const currentStatus = syncedThread.status;
   const canSend = role !== Role.ADMIN && currentStatus === ChatThreadStatus.ACTIVE;
-  const lastReadAt =
-    role === Role.USER ? syncedThread.userLastReadAt : role === Role.COLLECTOR ? syncedThread.collectorLastReadAt : null;
-  let hasUnread = syncedThread.lastMessageAt != null && (!lastReadAt || syncedThread.lastMessageAt > lastReadAt);
 
-  if (role === Role.USER && syncedThread.userId === profileId) {
-    await db.chatThread.update({
-      where: { id: syncedThread.id },
-      data: {
-        userLastReadAt: new Date(),
-      },
-    });
-    hasUnread = false;
-  }
+  // myLastReadAt  = kapan viewer (saya) terakhir baca   → menentukan hasUnread saya
+  // participantLastReadAt = kapan lawan bicara baca      → menentukan status centang pesan saya
+  const myLastReadAt: Date | null =
+    role === Role.USER      ? syncedThread.userLastReadAt
+    : role === Role.COLLECTOR ? syncedThread.collectorLastReadAt
+    : null;
 
-  if (role === Role.COLLECTOR && syncedThread.collectorId === profileId) {
-    await db.chatThread.update({
-      where: { id: syncedThread.id },
-      data: {
-        collectorLastReadAt: new Date(),
-      },
-    });
-    hasUnread = false;
-  }
+  const participantLastReadAt: Date | null =
+    role === Role.USER      ? syncedThread.collectorLastReadAt
+    : role === Role.COLLECTOR ? syncedThread.userLastReadAt
+    : null;
+
+  const hasUnread =
+    syncedThread.lastMessageAt != null &&
+    (!myLastReadAt || syncedThread.lastMessageAt > myLastReadAt);
 
   return {
     id: syncedThread.id,
@@ -139,6 +132,7 @@ export async function getChatThreadForPickup({
     canReport: role !== Role.ADMIN,
     hasUnread,
     lastMessageAt: syncedThread.lastMessageAt,
+    participantLastReadAt,
     messages: thread.messages.map(toMessageEntry),
   };
 }
@@ -200,8 +194,10 @@ export async function getChatThreadsForProfile({
     }
 
     const participant = role === Role.USER ? thread.collector : thread.user;
-    const lastReadAt = role === Role.USER ? syncedThread.userLastReadAt : syncedThread.collectorLastReadAt;
-    const hasUnread = syncedThread.lastMessageAt != null && (!lastReadAt || syncedThread.lastMessageAt > lastReadAt);
+
+    const myLastReadAt = role === Role.USER ? syncedThread.userLastReadAt : syncedThread.collectorLastReadAt;
+    const participantLastReadAt = role === Role.USER ? syncedThread.collectorLastReadAt : syncedThread.userLastReadAt;
+    const hasUnread = syncedThread.lastMessageAt != null && (!myLastReadAt || syncedThread.lastMessageAt > myLastReadAt);
 
     result.push({
       id: syncedThread.id,
@@ -217,6 +213,7 @@ export async function getChatThreadsForProfile({
       canReport: true,
       hasUnread,
       lastMessageAt: syncedThread.lastMessageAt,
+      participantLastReadAt,
       messages: thread.messages.map(toMessageEntry),
     });
   }

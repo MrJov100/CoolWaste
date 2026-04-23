@@ -52,6 +52,26 @@ async function getAuthorizedThreadOrThrow(threadId: string, profileId: string, r
   return thread;
 }
 
+export async function markThreadRead(threadId: string) {
+  const profile = await requireProfile();
+  if (profile.role !== Role.USER && profile.role !== Role.COLLECTOR) return;
+
+  const thread = await db.chatThread.findUnique({ where: { id: threadId } });
+  if (!thread) return;
+
+  const isParticipant = thread.userId === profile.id || thread.collectorId === profile.id;
+  if (!isParticipant) return;
+
+  await db.chatThread.update({
+    where: { id: threadId },
+    data: profile.role === Role.USER
+      ? { userLastReadAt: new Date() }
+      : { collectorLastReadAt: new Date() },
+  });
+
+  revalidateChatViews(thread.pickupRequestId);
+}
+
 export async function sendChatMessage(threadId: string, formData: FormData) {
   const profile = await requireProfile();
   const parsed = sendChatMessageSchema.safeParse({

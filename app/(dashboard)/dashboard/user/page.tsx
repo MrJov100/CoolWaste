@@ -2,8 +2,6 @@ import Link from "next/link";
 import { Role } from "@prisma/client";
 import {
   ArrowRight,
-  BarChart3,
-  History,
   Leaf,
   Package,
   Star,
@@ -16,19 +14,27 @@ import { PickupAlertDialog } from "@/components/dashboard/pickup-alert-dialog";
 import { MarketplaceListingsGrid } from "@/components/dashboard/marketplace-listings-grid";
 import { MarketplaceOfferList } from "@/components/dashboard/marketplace-offer-list";
 import { WasteChart } from "@/components/dashboard/waste-chart";
+import { OpenChatButton } from "@/components/chat/open-chat-button";
 import { Topbar } from "@/components/layout/topbar";
 import { requireRole } from "@/lib/auth";
 import { getDashboardData } from "@/lib/data/dashboard";
+import { getChatThreadsForProfile } from "@/lib/data/chat";
 
 export default async function UserDashboardPage() {
   const profile = await requireRole(Role.USER);
-  const dashboard = await getDashboardData(profile.id);
+  const [dashboard, chatThreads] = await Promise.all([
+    getDashboardData(profile.id),
+    getChatThreadsForProfile({ profileId: profile.id, role: Role.USER }),
+  ]);
 
   if (dashboard.role !== "USER") {
     return null;
   }
 
   const { summary, myPickups, ongoingPickups, availableCollectors, savedAddresses, marketDemand } = dashboard;
+
+  // Build a map: pickupRequestId → chatThreadId (for quick lookup in JSX)
+  const pickupThreadMap = new Map(chatThreads.map((t) => [t.pickupRequestId, t.id]));
 
   const summaryIcons = [Package, TrendingUp];
   const summaryColors = [
@@ -66,20 +72,6 @@ export default async function UserDashboardPage() {
               <p className="mt-2 max-w-xl text-slate-400">
                 Jual sampah dalam kurang dari 1 menit. Pilih jenis, berat, lokasi — sistem otomatis matching ke collector terdekat.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/pickups"
-                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
-              >
-                <History className="h-4 w-4" /> Riwayat Pickup
-              </Link>
-              <Link
-                href="/transactions"
-                className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-300 transition-all hover:border-white/20 hover:text-white"
-              >
-                <BarChart3 className="h-4 w-4" /> Transaksi
-              </Link>
             </div>
           </div>
         </section>
@@ -156,6 +148,28 @@ export default async function UserDashboardPage() {
                   <Truck className="h-5 w-5 text-amber-400" />
                 </div>
               </div>
+
+              {/* Quick chat access per pickup */}
+              {ongoingPickups.some((p) => pickupThreadMap.has(p.id)) && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {ongoingPickups.map((pickup) => {
+                    const threadId = pickupThreadMap.get(pickup.id);
+                    if (!threadId || !pickup.collectorName) return null;
+                    return (
+                      <div key={pickup.id} className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-2">
+                        <span className="text-xs text-slate-400">
+                          #{pickup.requestNo} · {pickup.collectorName}
+                        </span>
+                        <OpenChatButton
+                          threadId={threadId}
+                          label="Hubungi Collector"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <MarketplaceOfferList
                 title=""
                 description=""

@@ -20,6 +20,7 @@ import { Topbar } from "@/components/layout/topbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoggedInCta, LoggedInSignupCta } from "@/components/landing/logged-in-cta";
 import { getCurrentProfile } from "@/lib/auth";
 import { getLandingStats } from "@/lib/data/dashboard";
 
@@ -78,12 +79,16 @@ export default async function HomePage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link href={profile ? "/dashboard" : "/signup"}>
-                <Button size="lg" className="h-12 gap-2 rounded-full px-8 text-base shadow-lg shadow-emerald-500/25">
-                  Mulai Jual Sampah
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              {profile ? (
+                <LoggedInCta />
+              ) : (
+                <Link href="/signup">
+                  <Button size="lg" className="h-12 gap-2 rounded-full px-8 text-base shadow-lg shadow-emerald-500/25">
+                    Mulai Jual Sampah
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
               <Link href="#cara-kerja">
                 <Button
                   size="lg"
@@ -533,29 +538,40 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/signup">
-                <Button size="lg" className="h-12 gap-2 rounded-full px-8 text-base shadow-lg shadow-emerald-500/30">
-                  Daftar sebagai Warga
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-12 rounded-full border-emerald-500/30 px-8 text-base text-emerald-300 hover:bg-emerald-500/10"
-                >
-                  Daftar sebagai Pengepul
-                </Button>
-              </Link>
+              {profile ? (
+                <>
+                  <LoggedInSignupCta label="Daftar sebagai Warga" />
+                  <LoggedInSignupCta label="Daftar sebagai Pengepul" variant="outline" />
+                </>
+              ) : (
+                <>
+                  <Link href="/signup">
+                    <Button size="lg" className="h-12 gap-2 rounded-full px-8 text-base shadow-lg shadow-emerald-500/30">
+                      Daftar sebagai Warga
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="h-12 rounded-full border-emerald-500/30 px-8 text-base text-emerald-300 hover:bg-emerald-500/10"
+                    >
+                      Daftar sebagai Pengepul
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
-            <p className="mt-6 text-sm text-slate-500">
-              Sudah punya akun?{" "}
-              <Link href="/login" className="text-emerald-400 hover:underline">
-                Login di sini
-              </Link>
-            </p>
+            {!profile && (
+              <p className="mt-6 text-sm text-slate-500">
+                Sudah punya akun?{" "}
+                <Link href="/login" className="text-emerald-400 hover:underline">
+                  Login di sini
+                </Link>
+              </p>
+            )}
           </div>
         </section>
       </main>

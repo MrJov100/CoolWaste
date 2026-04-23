@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
 import {
@@ -8,9 +7,7 @@ import {
   Clock,
   ExternalLink,
   Flag,
-  Leaf,
   MapPin,
-  MessageCircle,
   Route,
   Scale,
   Truck,
@@ -19,12 +16,12 @@ import {
   X,
 } from "lucide-react";
 
+import { PickupPhoto } from "@/components/records/pickup-photo";
 import { PICKUP_SLOT_LABEL, PICKUP_STATUS_LABEL } from "@/lib/constants";
 import { buildGoogleMapsDirectionsUrl } from "@/lib/maps";
 import { formatDistanceMeters, formatDurationSeconds } from "@/lib/routing";
 import type { PickupDetailData } from "@/lib/types";
 import { formatCurrency, titleCase } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 
 const WASTE_ICONS: Record<string, string> = {
@@ -209,16 +206,7 @@ export function PickupDetailCard({
           {/* Photo */}
           <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-5">
             <p className="mb-3 text-xs font-medium uppercase tracking-widest text-slate-500">Foto Sampah</p>
-            <div className="relative aspect-video overflow-hidden rounded-2xl bg-slate-950">
-              {pickup.photoUrl ? (
-                <Image src={pickup.photoUrl} alt={pickup.wasteType} fill className="object-cover" />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-2">
-                  <Leaf className="h-8 w-8 text-slate-700" />
-                  <p className="text-sm text-slate-600">Belum ada foto</p>
-                </div>
-              )}
-            </div>
+            <PickupPhoto photoUrl={pickup.photoUrl} wasteType={pickup.wasteType} />
           </div>
 
           {/* Notes */}

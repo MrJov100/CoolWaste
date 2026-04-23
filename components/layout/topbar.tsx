@@ -1,21 +1,25 @@
 import Link from "next/link";
-import { LayoutDashboard, Leaf, MessageCircle, Trophy } from "lucide-react";
+import { LayoutDashboard, Leaf, Trophy } from "lucide-react";
 
-import { FloatingChatButton } from "@/components/chat/floating-chat-button";
+import { FloatingChatWidget } from "@/components/chat/floating-chat-widget";
 import { DevAccountSwitcher } from "@/components/layout/dev-account-switcher";
 import { DemoSwitcher } from "@/components/layout/demo-switcher";
 import { MobileNav, NavUserDropdown } from "@/components/layout/nav-dropdown";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABEL } from "@/lib/constants";
-import { countUnreadChatsForProfile } from "@/lib/data/chat";
+import { countUnreadChatsForProfile, getChatThreadsForProfile } from "@/lib/data/chat";
 import { isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
 import type { SmartWasteProfile } from "@/lib/types";
 
 export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }) {
-  const unreadChats =
-    profile && (profile.role === "USER" || profile.role === "COLLECTOR")
-      ? await countUnreadChatsForProfile(profile.id, profile.role)
-      : 0;
+  const isChatUser = profile && (profile.role === "USER" || profile.role === "COLLECTOR");
+
+  const [unreadChats, chatThreads] = isChatUser
+    ? await Promise.all([
+        countUnreadChatsForProfile(profile.id, profile.role),
+        getChatThreadsForProfile({ profileId: profile.id, role: profile.role }),
+      ])
+    : [0, []];
 
   const roleLabel = profile ? ROLE_LABEL[profile.role] : "";
 
@@ -53,18 +57,6 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
                 </Button>
               </Link>
 
-              <Link href="/chat">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  Chat
-                  {unreadChats > 0 && (
-                    <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-emerald-950">
-                      {unreadChats}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-
               <Link href="/leaderboard">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <Trophy className="h-4 w-4" />
@@ -77,7 +69,6 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
                 <NavUserDropdown
                   name={profile.name}
                   role={roleLabel}
-                  unreadChats={unreadChats}
                 />
               </div>
             </>
@@ -108,14 +99,19 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
             isLoggedIn={!!profile}
             name={profile?.name}
             role={roleLabel}
-            unreadChats={unreadChats}
           />
         </div>
       </div>
 
-      {/* Floating chat bubble for USER / COLLECTOR */}
-      {profile && (profile.role === "USER" || profile.role === "COLLECTOR") ? (
-        <FloatingChatButton unreadChats={unreadChats} />
+      {/* Floating chat widget for USER / COLLECTOR */}
+      {isChatUser && profile ? (
+        <FloatingChatWidget
+          threads={chatThreads}
+          profileId={profile.id}
+          role={profile.role}
+          profileName={profile.name}
+          unreadCount={unreadChats}
+        />
       ) : null}
     </header>
   );
