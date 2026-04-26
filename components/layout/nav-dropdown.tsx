@@ -176,7 +176,6 @@ export function MobileNav({ isLoggedIn, name, role }: MobileNavProps) {
                   </div>
                 )}
                 <NavItem href="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={close} />
-                <NavItem href="/leaderboard" icon={Trophy} label="Leaderboard" onClick={close} />
                 <NavItem href="/settings" icon={Settings} label="Pengaturan" onClick={close} />
                 <NavItem href="/pickups" icon={Clock} label="Riwayat Pickup" onClick={close} />
                 <NavItem href="/ratings" icon={Star} label="Rating Pickup" onClick={close} />
@@ -197,7 +196,6 @@ export function MobileNav({ isLoggedIn, name, role }: MobileNavProps) {
               </nav>
             ) : (
               <nav className="space-y-2">
-                <NavItem href="/leaderboard" icon={Trophy} label="Leaderboard" onClick={close} />
                 <Link
                   href="/login"
                   onClick={close}

@@ -22,7 +22,9 @@ import { buildGoogleMapsDirectionsUrl } from "@/lib/maps";
 import { formatDistanceMeters, formatDurationSeconds } from "@/lib/routing";
 import type { PickupDetailData } from "@/lib/types";
 import { formatCurrency, titleCase } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { cancelPickupRequest } from "@/lib/actions/dashboard";
 
 const WASTE_ICONS: Record<string, string> = {
   PLASTIC: "🧴",
@@ -149,14 +151,28 @@ export function PickupDetailCard({
               <InfoRow icon={CalendarClock} label="Jadwal pickup" value={format(pickup.scheduledAt, "dd MMM yyyy, HH:mm")} />
             )}
             <InfoRow icon={MapPin} label="Lokasi" value={pickup.addressText} />
-            <InfoRow icon={User} label="User" value={`${pickup.userName} · ${pickup.userEmail ?? ""}`} />
-            <InfoRow
-              icon={Truck}
-              label="Collector"
-              value={pickup.collectorName ?? "Belum ditetapkan"}
-            />
-            {pickup.collectorEmail && (
-              <InfoRow icon={User} label="Email collector" value={pickup.collectorEmail} />
+            <InfoRow icon={User} label="User" value={pickup.userName} />
+            {pickup.status !== "MENUNGGU_MATCHING" ? (
+              <>
+                <InfoRow
+                  icon={Truck}
+                  label="Collector"
+                  value={pickup.collectorName ?? "Belum ditetapkan"}
+                />
+                {pickup.collectorServiceAreaLabel && (
+                  <InfoRow icon={MapPin} label="Area collector" value={pickup.collectorServiceAreaLabel} />
+                )}
+              </>
+            ) : (
+              <div className="flex items-start gap-3 rounded-2xl bg-amber-950/20 px-4 py-3 border border-amber-500/10">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-800">
+                  <Truck className="h-4 w-4 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Collector</p>
+                  <p className="mt-0.5 text-sm font-medium text-amber-300">Sedang mencari collector...</p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -189,8 +205,8 @@ export function PickupDetailCard({
             </div>
           ) : null}
 
-          {/* Report link for user */}
-          {pickup.collectorName && (
+          {/* Report link for user — only when collector is confirmed */}
+          {pickup.collectorName && pickup.status !== "MENUNGGU_MATCHING" && (
             <Link
               href={`/report/${pickup.requestNo}`}
               className="flex items-center gap-2 rounded-2xl border border-red-500/15 bg-red-950/10 px-4 py-3 text-sm text-red-400 transition-all hover:bg-red-950/20"
@@ -255,6 +271,23 @@ export function PickupDetailCard({
               )}
             </div>
           )}
+
+          {/* Cancel — user only, cancellable statuses */}
+          {hidePendingCommercials && (pickup.status === "MENUNGGU_MATCHING" || pickup.status === "TERJADWAL") ? (
+            <div className="rounded-3xl border border-red-500/20 bg-red-950/10 p-5">
+              <p className="mb-1 text-sm font-semibold text-red-300">Batalkan request ini?</p>
+              <p className="mb-4 text-xs text-slate-500">Pilih alasan pembatalan sebelum mengkonfirmasi. Tindakan ini tidak bisa dibatalkan.</p>
+              <form action={cancelPickupRequest.bind(null, pickup.id)} className="space-y-3">
+                <Select name="cancellationReason" required defaultValue="">
+                  <option value="" disabled>Pilih alasan pembatalan</option>
+                  <option value="Mendadak harus pergi">Mendadak harus pergi</option>
+                  <option value="Sampah sudah terbuang/terjual">Sampah sudah dibuang/terjual</option>
+                  <option value="Salah input data">Salah memasukkan data</option>
+                </Select>
+                <Button type="submit" variant="destructive" size="sm" className="w-full">Konfirmasi Pembatalan</Button>
+              </form>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

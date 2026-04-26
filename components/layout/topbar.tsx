@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { LayoutDashboard, Leaf, Trophy } from "lucide-react";
+import { LayoutDashboard, Leaf } from "lucide-react";
 
 import { FloatingChatWidget } from "@/components/chat/floating-chat-widget";
+import { NotificationButton } from "@/components/notifications/notification-button";
 import { DevAccountSwitcher } from "@/components/layout/dev-account-switcher";
 import { DemoSwitcher } from "@/components/layout/demo-switcher";
 import { MobileNav, NavUserDropdown } from "@/components/layout/nav-dropdown";
@@ -9,17 +10,21 @@ import { Button } from "@/components/ui/button";
 import { ROLE_LABEL } from "@/lib/constants";
 import { countUnreadChatsForProfile, getChatThreadsForProfile } from "@/lib/data/chat";
 import { isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
+import { getNotificationsForProfile, countUnreadNotifications } from "@/lib/notifications";
+import type { NotificationEntry } from "@/lib/notifications";
 import type { SmartWasteProfile } from "@/lib/types";
 
 export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }) {
   const isChatUser = profile && (profile.role === "USER" || profile.role === "COLLECTOR");
 
-  const [unreadChats, chatThreads] = isChatUser
+  const [unreadChats, chatThreads, notifications, unreadNotifications] = isChatUser
     ? await Promise.all([
         countUnreadChatsForProfile(profile.id, profile.role),
         getChatThreadsForProfile({ profileId: profile.id, role: profile.role }),
+        getNotificationsForProfile(profile.id),
+        countUnreadNotifications(profile.id),
       ])
-    : [0, []];
+    : [0, [], [], 0];
 
   const roleLabel = profile ? ROLE_LABEL[profile.role] : "";
 
@@ -57,12 +62,13 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
                 </Button>
               </Link>
 
-              <Link href="/leaderboard">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Leaderboard
-                </Button>
-              </Link>
+              {/* Notification bell – only for USER / COLLECTOR */}
+              {isChatUser && (
+                <NotificationButton
+                  notifications={notifications as NotificationEntry[]}
+                  unreadCount={unreadNotifications as number}
+                />
+              )}
 
               {/* User dropdown (Pengaturan / Riwayat Pickup / Logout) */}
               <div className="ml-2">
@@ -76,11 +82,6 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
             <>
               {isDevAccountSwitcherEnabled() ? <DevAccountSwitcher /> : null}
 
-              <Link href="/leaderboard">
-                <Button variant="ghost" size="sm">
-                  Leaderboard
-                </Button>
-              </Link>
               <Link href="/login">
                 <Button variant="outline" size="sm">
                   Login

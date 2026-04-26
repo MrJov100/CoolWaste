@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import type { PickupRequestCard } from "@/lib/types";
-import { completePickupRequest, submitRating, cancelPickupRequest } from "@/lib/actions/dashboard";
+import { completePickupRequest, submitRating } from "@/lib/actions/dashboard";
 import { buildGoogleMapsDirectionsUrl } from "@/lib/maps";
 import { PICKUP_SLOT_LABEL, PICKUP_STATUS_LABEL } from "@/lib/constants";
 import { formatDistanceMeters, formatDurationSeconds } from "@/lib/routing";
@@ -223,9 +223,9 @@ function PickupCard({
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Link
               href={`/pickups/${offer.id}`}
-              className="flex items-center gap-1 rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-300 transition-all hover:border-emerald-500/50 hover:bg-emerald-500/20"
             >
-              Detail <ArrowRight className="h-3 w-3" />
+              Lihat Detail <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
@@ -238,11 +238,6 @@ function PickupCard({
           {/* Rating */}
           {mode !== "collector" && offer.status === "SELESAI" && !offer.hasUserRated ? (
             <RatingForm pickupId={offer.id} />
-          ) : null}
-
-          {/* Cancel */}
-          {mode !== "collector" && (offer.status === "MENUNGGU_MATCHING" || offer.status === "TERJADWAL") ? (
-            <CancelForm pickupId={offer.id} />
           ) : null}
 
           {/* Cancelled reason */}
@@ -359,19 +354,3 @@ function RatingForm({ pickupId }: { pickupId: string }) {
   );
 }
 
-function CancelForm({ pickupId }: { pickupId: string }) {
-  return (
-    <div className="rounded-2xl border border-red-500/15 bg-red-950/15 p-4">
-      <p className="mb-3 text-xs font-medium text-red-300">Batalkan request ini?</p>
-      <form action={cancelPickupRequest.bind(null, pickupId)} className="flex flex-wrap items-end gap-2">
-        <Select name="cancellationReason" required defaultValue="">
-          <option value="" disabled>Pilih alasan pembatalan</option>
-          <option value="Mendadak harus pergi">Mendadak harus pergi</option>
-          <option value="Sampah sudah terbuang/terjual">Sampah sudah dibuang/terjual</option>
-          <option value="Salah input data">Salah memasukkan data</option>
-        </Select>
-        <Button type="submit" variant="destructive" size="sm">Batalkan</Button>
-      </form>
-    </div>
-  );
-}

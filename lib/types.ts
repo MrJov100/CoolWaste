@@ -155,6 +155,14 @@ export type CollectorReviewEntry = {
   pickupRequestNo: string;
 };
 
+export type CollectorPickupStats = {
+  totalSelesai: number;
+  totalBatalOlehUser: number;
+  totalBatalOlehCollector: number;
+  totalDitolakCollector: number;
+  totalBatalOlehSistem: number;
+};
+
 export type TransactionListEntry = {
   id: string;
   amount: number;
@@ -168,6 +176,7 @@ export type TransactionListEntry = {
 
 export type PickupDetailData = PickupRequestCard & {
   collectorEmail: string | null;
+  collectorServiceAreaLabel: string | null;
 };
 
 export type ChatMessageEntry = {
@@ -239,6 +248,7 @@ export type CollectorDashboardData = DashboardBase & {
   ratingAverage: number;
   ratingCount: number;
   recentReviews: CollectorReviewEntry[];
+  pickupStats: CollectorPickupStats;
 };
 
 export type AdminDashboardData = DashboardBase & {

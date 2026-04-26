@@ -17,6 +17,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { PICKUP_SLOT_LABEL, PRICE_PER_KG, calculatePrice, normalizeWastePricingMap } from "@/lib/constants";
 import { db } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 import { COLLECTOR_REJECTION_REASONS, parsePickupRejectionHistory } from "@/lib/pickup-alerts";
 import {
   cancelPickupAsBusy,
@@ -167,6 +168,14 @@ async function openPickupChatsForBatch(batchId: string, collectorId: string, sch
         },
       }),
     ]);
+
+    await createNotification({
+      profileId: request.userId,
+      type: "PICKUP_MATCHED",
+      title: "Collector ditemukan! 🎉",
+      body: `Pickup #${request.requestNo} berhasil dijadwalkan pada ${scheduledAt.toLocaleString("id-ID", { day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })}.`,
+      pickupRequestId: request.id,
+    });
   }
 }
 
@@ -276,7 +285,27 @@ export async function createPickupRequest(_: ActionState, formData: FormData) {
   }
 
   const file = formData.get("photo");
-  const photo = file instanceof File && file.size > 0 ? await uploadWastePhoto(file, user.id) : null;
+  const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+  let photo: Awaited<ReturnType<typeof uploadWastePhoto>> | null = null;
+  if (file instanceof File && file.size > 0) {
+    if (!ALLOWED_MIME.includes(file.type)) {
+      return { success: false, message: "Format foto tidak didukung. Gunakan JPG, PNG, atau WEBP." };
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      return { success: false, message: "Ukuran foto terlalu besar. Maksimal 10 MB." };
+    }
+    try {
+      photo = await uploadWastePhoto(file, user.id);
+    } catch (err) {
+      return {
+        success: false,
+        message: err instanceof Error ? err.message : "Gagal mengupload foto. Coba lagi.",
+      };
+    }
+  }
+
   const savedAddress = parsed.data.addressId
     ? await db.savedAddress.findFirst({
         where: {
@@ -314,6 +343,15 @@ export async function createPickupRequest(_: ActionState, formData: FormData) {
   });
 
   await assignPickupToBatch(pickup.id);
+
+  await createNotification({
+    profileId: user.id,
+    type: "PICKUP_MENUNGGU_MATCHING",
+    title: "Sistem sedang mencari collector 🔍",
+    body: `Pickup #${pickup.requestNo} masuk antrian. Sistem akan mencarikan collector terdekat untukmu.`,
+    pickupRequestId: pickup.id,
+  });
+
   revalidateMarketplaceViews();
 
   return {
@@ -477,6 +515,12 @@ export async function startPickupBatch(batchId: string) {
 
   const batch = await db.pickupBatch.findUniqueOrThrow({
     where: { id: batchId },
+    include: {
+      requests: {
+        where: { status: PickupStatus.TERJADWAL },
+        select: { id: true, userId: true, requestNo: true },
+      },
+    },
   });
 
   if (batch.collectorId !== collector.id) {
@@ -493,6 +537,17 @@ export async function startPickupBatch(batchId: string) {
       data: { status: PickupStatus.DALAM_PERJALANAN },
     }),
   ]);
+
+  // Notify each user that collector is on the way
+  for (const request of batch.requests) {
+    await createNotification({
+      profileId: request.userId,
+      type: "PICKUP_DALAM_PERJALANAN",
+      title: "Collector sedang dalam perjalanan 🚛",
+      body: `Collector menuju lokasi pickup #${request.requestNo}. Pastikan sampah sudah siap!`,
+      pickupRequestId: request.id,
+    });
+  }
 
   revalidateMarketplaceViews();
 }
@@ -531,6 +586,8 @@ export async function completePickupRequest(pickupRequestId: string, formData: F
   const deltaWeight = Math.abs(parsed.data.actualWeightKg - pickup.estimatedWeightKg);
   const weightFlagged = pickup.estimatedWeightKg > 0 && deltaWeight / pickup.estimatedWeightKg > 0.3;
 
+  const completedAt = new Date();
+
   await db.$transaction(async (tx) => {
     await tx.pickupRequest.update({
       where: { id: pickup.id },
@@ -542,16 +599,41 @@ export async function completePickupRequest(pickupRequestId: string, formData: F
         paymentStatus: PaymentStatus.DIBAYAR,
         status: PickupStatus.SELESAI,
         weightFlagged,
-        completedAt: new Date(),
+        completedAt,
       },
+    });
+    const completedAtStr = completedAt.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const paymentLabel = parsed.data.paymentMethod === PaymentMethod.CASH ? "tunai" : "e-wallet";
+
+    const updatedThreads = await tx.chatThread.findMany({
+      where: { pickupRequestId: pickup.id },
+      select: { id: true },
     });
 
     await tx.chatThread.updateMany({
       where: { pickupRequestId: pickup.id },
       data: {
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        lastMessageAt: new Date(),
       },
     });
+
+    for (const thread of updatedThreads) {
+      await tx.chatMessage.create({
+        data: {
+          threadId: thread.id,
+          senderId: collector.id,
+          content: `✅ Transaksi [${pickup.requestNo}] telah berhasil diselesaikan pada ${completedAtStr}.\n\nBerat aktual: ${parsed.data.actualWeightKg.toFixed(1)} kg · Total pembayaran: Rp ${finalTotalAmount.toLocaleString("id-ID")} · Metode: ${paymentLabel}.\n\nTerima kasih telah menggunakan Smart Waste! ♻️`,
+          isSystemMessage: true,
+        },
+      });
+    }
 
     if (!pickup.transaction) {
       await tx.transaction.create({
@@ -588,6 +670,15 @@ export async function completePickupRequest(pickupRequestId: string, formData: F
         },
       });
     }
+  });
+
+  // Notify user pickup is complete
+  await createNotification({
+    profileId: pickup.userId,
+    type: "PICKUP_SELESAI",
+    title: "Pickup selesai ✅",
+    body: `Pickup #${pickup.requestNo} telah selesai. Total pembayaran: Rp ${finalTotalAmount.toLocaleString("id-ID")}.`,
+    pickupRequestId: pickup.id,
   });
 
   revalidateMarketplaceViews();
@@ -744,10 +835,35 @@ export async function cancelPickupRequest(pickupRequestId: string, formData: For
       },
     });
 
+    const cancelledAt = new Date().toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const threadsToClose = await tx.chatThread.findMany({
+      where: { pickupRequestId: pickup.id },
+      select: { id: true },
+    });
+
+    for (const thread of threadsToClose) {
+      await tx.chatMessage.create({
+        data: {
+          threadId: thread.id,
+          senderId: profile.id,
+          content: `❌ Pickup [${pickup.requestNo}] dibatalkan oleh User pada ${cancelledAt}.\n\nAlasan: ${parsed.data.cancellationReason}.`,
+          isSystemMessage: true,
+        },
+      });
+    }
+
     await tx.chatThread.updateMany({
       where: { pickupRequestId: pickup.id },
       data: {
         status: ChatThreadStatus.CLOSED,
+        lastMessageAt: new Date(),
       },
     });
 
@@ -776,6 +892,25 @@ export async function cancelPickupRequest(pickupRequestId: string, formData: For
       }
     }
   });
+
+  await createNotification({
+    profileId: pickup.userId,
+    type: "PICKUP_DIBATALKAN",
+    title: "Pickup berhasil dibatalkan",
+    body: `Pickup #${pickup.requestNo} telah dibatalkan. Alasan: ${parsed.data.cancellationReason}.`,
+    pickupRequestId: pickup.id,
+  });
+
+  // Notify collector if they were assigned
+  if (pickup.collectorId) {
+    await createNotification({
+      profileId: pickup.collectorId,
+      type: "PICKUP_DIBATALKAN",
+      title: "Pickup dibatalkan oleh user",
+      body: `Pickup #${pickup.requestNo} dibatalkan. Alasan: ${parsed.data.cancellationReason}.`,
+      pickupRequestId: pickup.id,
+    });
+  }
 
   revalidateMarketplaceViews();
 }
@@ -829,11 +964,36 @@ export async function abortPickupBatch(batchId: string, formData: FormData) {
       });
     }
 
+    const abortedAt = new Date().toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
     for (const request of activeRequests) {
+      const threads = await tx.chatThread.findMany({
+        where: { pickupRequestId: request.id },
+        select: { id: true },
+      });
+
+      for (const thread of threads) {
+        await tx.chatMessage.create({
+          data: {
+            threadId: thread.id,
+            senderId: collector.id,
+            content: `❌ Pickup [${request.requestNo}] dibatalkan oleh Collector pada ${abortedAt}.\n\nAlasan: ${parsed.data.cancellationReason}.\n\nPickup akan dicarikan collector baru secara otomatis.`,
+            isSystemMessage: true,
+          },
+        });
+      }
+
       await tx.chatThread.updateMany({
         where: { pickupRequestId: request.id },
         data: {
           status: ChatThreadStatus.CLOSED,
+          lastMessageAt: new Date(),
         },
       });
 
@@ -866,6 +1026,14 @@ export async function abortPickupBatch(batchId: string, formData: FormData) {
   });
 
   for (const request of activeRequests) {
+    // Notify user that collector cancelled
+    await createNotification({
+      profileId: request.userId,
+      type: "PICKUP_DIBATALKAN",
+      title: "Collector membatalkan pickup",
+      body: `Pickup #${request.requestNo} dibatalkan oleh collector. Alasan: ${parsed.data.cancellationReason}. Sistem akan mencari collector baru.`,
+      pickupRequestId: request.id,
+    });
     await assignPickupToBatch(request.id).catch(() => {});
   }
 

@@ -68,21 +68,13 @@ export default async function PickupDetailPage({
               <p className="mt-0.5 text-sm text-slate-400">#{pickup.requestNo}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            {chatThread ? (
-              <OpenChatButton
-                threadId={chatThread.id}
-                label="Buka Chat"
-                className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-950/20 px-4 py-2.5 text-sm text-amber-300 transition-all hover:bg-amber-950/40"
-              />
-            ) : null}
-            <Link
-              href="/pickups"
-              className="flex items-center gap-2 rounded-2xl border border-white/10 px-4 py-2.5 text-sm text-slate-400 transition-all hover:border-white/20 hover:text-slate-200"
-            >
-              Kembali ke Riwayat
-            </Link>
-          </div>
+          {chatThread && pickup.status !== "SELESAI" && pickup.status !== "DIBATALKAN" ? (
+            <OpenChatButton
+              threadId={chatThread.id}
+              label="Buka Chat"
+              className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-950/20 px-4 py-2.5 text-sm text-amber-300 transition-all hover:bg-amber-950/40"
+            />
+          ) : null}
         </section>
 
         <PickupDetailCard

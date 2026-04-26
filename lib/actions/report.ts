@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createNotification } from "@/lib/notifications";
 
 type ActionState = { success: boolean; message: string };
 
@@ -140,6 +141,14 @@ export async function submitCollectorReport(
       reportedUserId: pickup.collectorId,
       reason: fullReason,
     },
+  });
+
+  await createNotification({
+    profileId: user.id,
+    type: "LAPORAN_TERKIRIM",
+    title: "Laporan berhasil dikirim",
+    body: "Tim CoolWaste akan meninjau laporanmu dalam 1–3 hari kerja. Terima kasih telah melaporkan.",
+    pickupRequestId: pickup.id,
   });
 
   return {

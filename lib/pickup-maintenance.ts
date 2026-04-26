@@ -3,6 +3,7 @@ import { ChatThreadStatus, PickupStatus, Role, VerificationState, WasteType } fr
 import { db } from "@/lib/db";
 import { syncCollectorDailyLoads } from "@/lib/collector-load";
 import { calculateDistanceKm } from "@/lib/maps";
+import { createNotification } from "@/lib/notifications";
 import {
   PICKUP_BUSY_MESSAGE,
   PICKUP_TIMEOUT_MINUTES,
@@ -12,6 +13,11 @@ import {
 } from "@/lib/pickup-alerts";
 
 export async function cancelPickupAsBusy(pickupId: string, message = PICKUP_BUSY_MESSAGE) {
+  const pickup = await db.pickupRequest.findUnique({
+    where: { id: pickupId },
+    select: { id: true, userId: true, requestNo: true },
+  });
+
   await db.$transaction([
     db.pickupRequest.update({
       where: { id: pickupId },
@@ -39,6 +45,16 @@ export async function cancelPickupAsBusy(pickupId: string, message = PICKUP_BUSY
       },
     }),
   ]);
+
+  if (pickup) {
+    await createNotification({
+      profileId: pickup.userId,
+      type: "PICKUP_DIBATALKAN",
+      title: "Pickup dibatalkan oleh sistem",
+      body: `Pickup #${pickup.requestNo} dibatalkan karena tidak ada collector tersedia. Silakan buat request baru.`,
+      pickupRequestId: pickup.id,
+    });
+  }
 }
 
 export async function expireTimedOutPendingPickups() {

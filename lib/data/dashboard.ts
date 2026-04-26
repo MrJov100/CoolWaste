@@ -10,6 +10,7 @@ import type {
   AdminDashboardData,
   CollectorBatchCard,
   CollectorDashboardData,
+  CollectorPickupStats,
   CollectorReviewEntry,
   CollectorServiceCard,
   DashboardData,
@@ -233,9 +234,66 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
   };
 }
 
+export async function getCollectorPickupStats(collectorId: string): Promise<CollectorPickupStats> {
+  const [selesai, dibatalkan, rejectionCount] = await Promise.all([
+    // Pickup selesai yang pernah ditangani collector ini
+    db.pickupRequest.count({
+      where: { collectorId, status: PickupStatus.SELESAI },
+    }),
+    // Semua pickup DIBATALKAN yang pernah dipegang collector ini
+    db.pickupRequest.findMany({
+      where: {
+        collectorId,
+        status: PickupStatus.DIBATALKAN,
+      },
+      select: {
+        autoCancelledAt: true,
+        autoCancelledReason: true,
+        cancellationReason: true,
+        collectorNote: true,
+      },
+    }),
+    // Jumlah pickup (apapun statusnya) yang pernah ditolak oleh collector ini
+    // menggunakan rejectedCollectorIds array
+    db.pickupRequest.count({
+      where: {
+        rejectedCollectorIds: { has: collectorId },
+      },
+    }),
+  ]);
+
+  let totalBatalOlehUser = 0;
+  let totalBatalOlehCollector = 0;
+  let totalBatalOlehSistem = 0;
+
+  for (const pickup of dibatalkan) {
+    if (pickup.autoCancelledAt) {
+      // Dibatalkan otomatis oleh sistem (timeout / tidak ada collector)
+      totalBatalOlehSistem++;
+    } else if (
+      pickup.collectorNote?.startsWith("Re-queued:") ||
+      pickup.autoCancelledReason?.toLowerCase().includes("collector membatalkan")
+    ) {
+      // Dibatalkan oleh collector (abortPickupBatch)
+      totalBatalOlehCollector++;
+    } else {
+      // Dibatalkan oleh user
+      totalBatalOlehUser++;
+    }
+  }
+
+  return {
+    totalSelesai: selesai,
+    totalBatalOlehUser,
+    totalBatalOlehCollector,
+    totalDitolakCollector: rejectionCount,
+    totalBatalOlehSistem,
+  };
+}
+
 async function getCollectorDashboard(profileId: string): Promise<CollectorDashboardData> {
   const currentLoadKg = await syncCollectorDailyLoad(profileId);
-  const [profile, openBatches, myPickups, ratingsReceived] = await Promise.all([
+  const [profile, openBatches, myPickups, ratingsReceived, pickupStats] = await Promise.all([
     db.profile.findUniqueOrThrow({ where: { id: profileId } }),
     db.pickupBatch.findMany({
       where: {
@@ -274,6 +332,7 @@ async function getCollectorDashboard(profileId: string): Promise<CollectorDashbo
       orderBy: { createdAt: "desc" },
       take: 8,
     }),
+    getCollectorPickupStats(profileId),
   ]);
 
   const pendingBatchCount = openBatches.filter((item) => item.status === BatchStatus.MENUNGGU_KONFIRMASI).length;
@@ -312,6 +371,7 @@ async function getCollectorDashboard(profileId: string): Promise<CollectorDashbo
       createdAt: review.createdAt,
       pickupRequestNo: review.pickupRequest.requestNo,
     })),
+    pickupStats,
   };
 }
 

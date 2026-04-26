@@ -7,7 +7,6 @@ import { format, formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import type { Role } from "@prisma/client";
 import {
-  AlertCircle,
   AlertTriangle,
   Check,
   CheckCheck,
@@ -19,18 +18,10 @@ import {
   X,
 } from "lucide-react";
 
-import { sendChatMessage, reportChatThread, markThreadRead } from "@/lib/actions/chat";
+import { sendChatMessage, markThreadRead } from "@/lib/actions/chat";
 import type { ChatThreadData, ChatMessageEntry } from "@/lib/types";
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const REPORT_REASONS = [
-  "Bahasa kasar / tidak sopan",
-  "Spam atau pesan mengganggu",
-  "Ancaman atau intimidasi",
-  "Informasi menyesatkan",
-  "Percakapan di luar konteks pickup",
-];
-
 const STATUS_CFG = {
   ACTIVE:    { label: "Aktif",      color: "text-emerald-400", dot: "bg-emerald-400" },
   READ_ONLY: { label: "Hanya Baca", color: "text-amber-400",   dot: "bg-amber-400"   },
@@ -178,11 +169,6 @@ function InlineChatRoom({
   );
 
   const [msgValue, setMsgValue] = useState("");
-  const [showReport, setShowReport] = useState(false);
-  const [selectedReason, setSelectedReason] = useState("");
-  const [reportPending, setReportPending] = useState(false);
-  const [reportDone, setReportDone] = useState(false);
-  const [reportError, setReportError] = useState("");
 
   const isActive   = thread.status === "ACTIVE";
   const isReadOnly = thread.status === "READ_ONLY";
@@ -225,25 +211,6 @@ function InlineChatRoom({
     });
   }
 
-  async function handleReport(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!selectedReason || reportPending) return;
-    setReportPending(true);
-    setReportError("");
-    const fd = new FormData();
-    fd.set("reason", selectedReason);
-    try {
-      await reportChatThread(thread.id, fd);
-      setReportDone(true);
-      setShowReport(false);
-      router.refresh();
-    } catch (err) {
-      setReportError(err instanceof Error ? err.message : "Gagal mengirim laporan.");
-    } finally {
-      setReportPending(false);
-    }
-  }
-
   return (
     <div className="flex h-full flex-col">
       {/* Sub-header */}
@@ -258,70 +225,17 @@ function InlineChatRoom({
           {isActive   && thread.expiresAt && <ExpiryCountdown expiresAt={thread.expiresAt} />}
           {isClosed   && <span className="flex items-center gap-1 text-[10px] text-slate-500"><Lock className="h-3 w-3" />Ditutup</span>}
           {isReadOnly && <span className="flex items-center gap-1 text-[10px] text-amber-400"><AlertTriangle className="h-3 w-3" />Baca</span>}
-          {!isClosed && !reportDone && thread.canReport && (
-            <button
-              onClick={() => setShowReport((v) => !v)}
-              className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${
-                showReport ? "bg-red-500/20 text-red-300" : "text-slate-500 hover:bg-white/5 hover:text-red-400"
-              }`}
+          {!isClosed && thread.canReport && thread.pickupRequestNo && (
+            <a
+              href={`/report/${thread.pickupRequestNo}`}
+              className="flex h-6 w-6 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
               title={`Laporkan ${participantLabel}`}
             >
               <Flag className="h-3 w-3" />
-            </button>
+            </a>
           )}
-          {reportDone && <span className="text-[10px] text-emerald-400">✓</span>}
         </div>
       </div>
-
-      {/* Report panel */}
-      {showReport && (
-        <div className="shrink-0 border-b border-red-500/10 bg-red-950/10 px-3 py-2.5">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-[11px] font-semibold text-red-300">
-              <Flag className="mr-1 inline h-3 w-3" />Laporkan {participantLabel}
-            </p>
-            <button onClick={() => setShowReport(false)} className="text-slate-500 hover:text-slate-300">
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-          {reportError && (
-            <p className="mb-2 flex items-center gap-1 text-[10px] text-red-400">
-              <AlertCircle className="h-3 w-3" />{reportError}
-            </p>
-          )}
-          <form onSubmit={handleReport} className="space-y-1">
-            {REPORT_REASONS.map((r) => (
-              <label
-                key={r}
-                className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2 py-1.5 text-[10px] transition-all ${
-                  selectedReason === r
-                    ? "border-red-500/40 bg-red-500/10 text-red-200"
-                    : "border-white/[0.08] text-slate-400 hover:border-white/20"
-                }`}
-              >
-                <input type="radio" name="reason" value={r} checked={selectedReason === r}
-                  onChange={() => setSelectedReason(r)} className="sr-only" />
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full border-2 transition-all ${
-                  selectedReason === r ? "border-red-400 bg-red-400" : "border-slate-600"
-                }`} />
-                {r}
-              </label>
-            ))}
-            <button
-              type="submit"
-              disabled={!selectedReason || reportPending}
-              className={`mt-1.5 flex w-full items-center justify-center gap-1 rounded-lg py-1.5 text-[10px] font-semibold transition-all ${
-                selectedReason && !reportPending
-                  ? "bg-red-500/80 text-white hover:bg-red-500"
-                  : "cursor-not-allowed bg-slate-800 text-slate-500"
-              }`}
-            >
-              <Flag className="h-3 w-3" />
-              {reportPending ? "Mengirim..." : "Kirim Laporan"}
-            </button>
-          </form>
-        </div>
-      )}
 
       {/* Messages */}
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">

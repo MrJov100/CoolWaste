@@ -1,9 +1,25 @@
 import { PickupStatus, Role } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { expireTimedOutPendingPickups } from "@/lib/pickup-maintenance";
 import { parsePickupRejectionHistory } from "@/lib/pickup-alerts";
 import type { PickupDetailData, PickupRequestCard, TransactionListEntry } from "@/lib/types";
+
+async function getSignedPhotoUrl(photoPath: string | null): Promise<string | null> {
+  if (!photoPath) return null;
+  try {
+    const client = createAdminClient();
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
+    const { data, error } = await client.storage
+      .from(bucket)
+      .createSignedUrl(photoPath, 60 * 60); // 1 hour
+    if (error || !data) return null;
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
+}
 
 export async function getTransactionsForProfile(
   profileId: string,
@@ -205,6 +221,12 @@ export async function getPickupDetailForProfile({
     return null;
   }
 
+  // Try a signed URL first (works for private buckets).
+  // Fall back to the stored public URL when the bucket is public or signing fails.
+  const resolvedPhotoUrl = pickup.photoPath
+    ? (await getSignedPhotoUrl(pickup.photoPath)) ?? pickup.photoUrl
+    : pickup.photoUrl;
+
   return {
     id: pickup.id,
     requestNo: pickup.requestNo,
@@ -234,7 +256,7 @@ export async function getPickupDetailForProfile({
     createdAt: pickup.createdAt,
     scheduledAt: pickup.scheduledAt,
     completedAt: pickup.completedAt,
-    photoUrl: pickup.photoUrl,
+    photoUrl: resolvedPhotoUrl,
     notes: pickup.notes,
     collectorNote: pickup.collectorNote,
     userName: pickup.user.name,
@@ -245,6 +267,7 @@ export async function getPickupDetailForProfile({
     collectorLatitude: pickup.collector?.latitude ?? null,
     collectorLongitude: pickup.collector?.longitude ?? null,
     collectorEmail: pickup.collector?.email ?? null,
+    collectorServiceAreaLabel: pickup.collector?.serviceAreaLabel ?? null,
     batchId: pickup.batchId,
     cancellationReason: pickup.cancellationReason,
     hasUserRated: pickup.ratings?.some((r) => r.fromUserId === pickup.userId) ?? false,

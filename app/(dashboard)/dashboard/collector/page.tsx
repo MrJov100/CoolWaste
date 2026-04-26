@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Role, VerificationState } from "@prisma/client";
 
 import { CollectorListingForm } from "@/components/dashboard/collector-listing-form";
+import { CollectorStatsCard } from "@/components/dashboard/collector-stats-card";
 import { HighlightGrid } from "@/components/dashboard/highlight-grid";
 import { MarketplaceOfferList } from "@/components/dashboard/marketplace-offer-list";
 import { CollectorReviewCard } from "@/components/dashboard/collector-review-card";
@@ -66,7 +67,6 @@ export default async function CollectorDashboardPage() {
             <CardContent className="p-5">
               <p className="text-sm text-slate-400">Area layanan aktif</p>
               <p className="mt-2 text-3xl font-semibold text-white">{profile.serviceAreaLabel ?? "Belum diisi"}</p>
-              <p className="mt-2 text-sm text-slate-400">{profile.email}</p>
             </CardContent>
           </Card>
         </section>
@@ -102,6 +102,10 @@ export default async function CollectorDashboardPage() {
             offers={dashboard.myPickups}
             mode="collector"
           />
+        </section>
+
+        <section className="mt-8">
+          <CollectorStatsCard stats={dashboard.pickupStats} />
         </section>
 
         <section className="mt-8">

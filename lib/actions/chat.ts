@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { requireProfile, requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { createNotification } from "@/lib/notifications";
 
 const sendChatMessageSchema = z.object({
   content: z.string().trim().min(1, "Pesan tidak boleh kosong.").max(500, "Pesan maksimal 500 karakter."),
@@ -106,6 +107,20 @@ export async function sendChatMessage(threadId: string, formData: FormData) {
       },
     }),
   ]);
+
+  // Notify the other participant about the new message
+  const recipientId = profile.role === Role.USER ? thread.collectorId : thread.userId;
+  const senderLabel = profile.role === Role.USER ? "User" : "Collector";
+  await createNotification({
+    profileId: recipientId,
+    type: "PESAN_MASUK",
+    title: `Pesan baru dari ${senderLabel}`,
+    body: parsed.data.content.length > 80
+      ? `${parsed.data.content.slice(0, 80)}…`
+      : parsed.data.content,
+    pickupRequestId: thread.pickupRequestId,
+    chatThreadId: thread.id,
+  });
 
   revalidateChatViews(thread.pickupRequestId);
 }

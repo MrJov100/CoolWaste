@@ -59,6 +59,7 @@ export function MarketplaceListingsGrid({
   const defaultAddress = savedAddresses.find((item) => item.isDefault) ?? savedAddresses[0];
   const [state, formAction, pending] = useActionState(createPickupRequest, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const [wasteType, setWasteType] = useState<string>(WasteType.PLASTIC);
   const [weight, setWeight] = useState<string>("");
@@ -85,8 +86,7 @@ export function MarketplaceListingsGrid({
   useEffect(() => {
     if (state.success) {
       setShowSuccess(true);
-      setPhotoFile(null);
-      setPhotoPreview(null);
+      clearPhoto();
       setWeight("");
       formRef.current?.reset();
       setWasteType(WasteType.PLASTIC);
@@ -94,6 +94,7 @@ export function MarketplaceListingsGrid({
       const t = setTimeout(() => setShowSuccess(false), 5000);
       return () => clearTimeout(t);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -104,6 +105,14 @@ export function MarketplaceListingsGrid({
     const reader = new FileReader();
     reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
+  }
+
+  function clearPhoto() {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (photoInputRef.current) {
+      photoInputRef.current.value = "";
+    }
   }
 
   function handleWeightChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -236,13 +245,25 @@ export function MarketplaceListingsGrid({
             <label className="mb-2 block text-sm font-medium text-slate-300">
               Foto Sampah <span className="text-red-400">*</span>
             </label>
+
+            {/* Input file selalu ada di DOM agar FormData mengandung field "photo" saat submit */}
+            <input
+              ref={photoInputRef}
+              id="photo"
+              name="photo"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handlePhotoChange}
+            />
+
             {photoPreview ? (
               <div className="relative">
                 <div className="relative h-48 overflow-hidden rounded-2xl bg-slate-950">
                   <Image src={photoPreview} alt="Preview" fill className="object-cover" />
                   <button
                     type="button"
-                    onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                    onClick={clearPhoto}
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-slate-300 hover:bg-red-900/60 hover:text-red-300"
                   >
                     <X className="h-4 w-4" />
@@ -266,14 +287,6 @@ export function MarketplaceListingsGrid({
                   <p className="text-sm font-medium text-slate-300">Upload foto sampah</p>
                   <p className="mt-0.5 text-xs text-slate-500">JPG, PNG, WEBP — maks. 10MB</p>
                 </div>
-                <input
-                  id="photo"
-                  name="photo"
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={handlePhotoChange}
-                />
               </label>
             )}
             {photoError && (
