@@ -31,10 +31,19 @@ export default async function UserDashboardPage() {
     return null;
   }
 
-  const { summary, myPickups, ongoingPickups, availableCollectors, savedAddresses, marketDemand } = dashboard;
+  const {
+    summary,
+    myPickups,
+    ongoingPickups,
+    availableCollectors,
+    savedAddresses,
+    marketDemand,
+  } = dashboard;
 
   // Build a map: pickupRequestId → chatThreadId (for quick lookup in JSX)
-  const pickupThreadMap = new Map(chatThreads.map((t) => [t.pickupRequestId, t.id]));
+  const pickupThreadMap = new Map(
+    chatThreads.map((t) => [t.pickupRequestId, t.id]),
+  );
 
   const summaryIcons = [Package, TrendingUp];
   const summaryColors = [
@@ -62,7 +71,9 @@ export default async function UserDashboardPage() {
         <section className="mb-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm text-slate-400">Selamat datang kembali 👋</p>
+              <p className="text-sm text-slate-400">
+                Selamat datang kembali 👋
+              </p>
               <h1
                 className="mt-1 text-3xl font-bold text-white sm:text-4xl"
                 style={{ fontFamily: "var(--font-sora), sans-serif" }}
@@ -70,7 +81,8 @@ export default async function UserDashboardPage() {
                 {profile.name}
               </h1>
               <p className="mt-2 max-w-xl text-slate-400">
-                Jual sampah dalam kurang dari 1 menit. Pilih jenis, berat, lokasi — sistem otomatis matching ke collector terdekat.
+                Jual sampah dalam kurang dari 1 menit. Pilih jenis, berat,
+                lokasi — sistem otomatis matching ke collector terdekat.
               </p>
             </div>
           </div>
@@ -80,7 +92,8 @@ export default async function UserDashboardPage() {
         <section className="mb-8 grid grid-cols-2 gap-3">
           {summary.map((metric, i) => {
             const Icon = summaryIcons[i] ?? Leaf;
-            const colorClass = summaryColors[i] ?? "text-slate-400 bg-slate-500/10";
+            const colorClass =
+              summaryColors[i] ?? "text-slate-400 bg-slate-500/10";
             const [iconColor, bgColor] = colorClass.split(" ");
             return (
               <div
@@ -89,12 +102,16 @@ export default async function UserDashboardPage() {
               >
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs text-slate-500">{metric.label}</p>
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${bgColor}`}>
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-xl ${bgColor}`}
+                  >
                     <Icon className={`h-4 w-4 ${iconColor}`} />
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-white">{metric.value}</p>
-                <p className="mt-1 text-xs text-slate-500 line-clamp-2">{metric.hint}</p>
+                <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                  {metric.hint}
+                </p>
               </div>
             );
           })}
@@ -103,9 +120,24 @@ export default async function UserDashboardPage() {
         {/* ── Quick links (tanpa Settings) ── */}
         <section className="mb-8 grid grid-cols-3 gap-3">
           {[
-            { href: "/pickups", icon: Package, label: "Riwayat Pickup", desc: "Pantau status request" },
-            { href: "/transactions", icon: Wallet, label: "Transaksi", desc: "Riwayat pembayaran" },
-            { href: "/ratings", icon: Star, label: "Rating Saya", desc: "Review collector" },
+            {
+              href: "/pickups",
+              icon: Package,
+              label: "Riwayat Pickup",
+              desc: "Pantau status request",
+            },
+            {
+              href: "/transactions",
+              icon: Wallet,
+              label: "Transaksi",
+              desc: "Riwayat pembayaran",
+            },
+            {
+              href: "/ratings",
+              icon: Star,
+              label: "Rating Saya",
+              desc: "Review collector",
+            },
           ].map((item) => (
             <Link
               key={item.href}
@@ -140,9 +172,15 @@ export default async function UserDashboardPage() {
             <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-widest text-amber-400">Sedang Berlangsung</p>
-                  <h2 className="mt-1 text-xl font-semibold text-white">Pickup Aktif</h2>
-                  <p className="mt-0.5 text-sm text-slate-400">Pickup yang masih menunggu atau dalam perjalanan</p>
+                  <p className="text-xs font-medium uppercase tracking-widest text-amber-400">
+                    Sedang Berlangsung
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold text-white">
+                    Pickup Aktif
+                  </h2>
+                  <p className="mt-0.5 text-sm text-slate-400">
+                    Pickup yang masih menunggu atau dalam perjalanan
+                  </p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/10">
                   <Truck className="h-5 w-5 text-amber-400" />
@@ -156,7 +194,10 @@ export default async function UserDashboardPage() {
                     const threadId = pickupThreadMap.get(pickup.id);
                     if (!threadId || !pickup.collectorName) return null;
                     return (
-                      <div key={pickup.id} className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-2">
+                      <div
+                        key={pickup.id}
+                        className="flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.03] px-3 py-2"
+                      >
                         <span className="text-xs text-slate-400">
                           #{pickup.requestNo} · {pickup.collectorName}
                         </span>
@@ -184,9 +225,15 @@ export default async function UserDashboardPage() {
         {/* ── Waste Chart ── */}
         <section className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
           <div className="mb-4">
-            <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">Statistik</p>
-            <h2 className="mt-1 text-xl font-semibold text-white">Komposisi Sampah</h2>
-            <p className="mt-0.5 text-sm text-slate-400">Breakdown jenis sampah yang sudah kamu jual</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-emerald-400">
+              Statistik
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-white">
+              Komposisi Sampah
+            </h2>
+            <p className="mt-0.5 text-sm text-slate-400">
+              Breakdown jenis sampah yang sudah kamu jual
+            </p>
           </div>
           <WasteChart data={marketDemand} />
         </section>

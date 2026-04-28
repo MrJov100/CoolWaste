@@ -358,6 +358,37 @@ export async function updateCollectorSettings(_: ActionState, formData: FormData
   };
 }
 
+const collectorCapacitySchema = z.object({
+  dailyCapacityKg: z.coerce.number().positive("Kapasitas harian harus lebih dari 0."),
+  serviceAreaLabel: z.string().trim().min(3, "Area layanan minimal 3 karakter."),
+});
+
+export async function updateCollectorCapacity(_: ActionState, formData: FormData): Promise<ActionState> {
+  const profile = await requireRole(Role.COLLECTOR);
+  const parsed = collectorCapacitySchema.safeParse({
+    dailyCapacityKg: formData.get("dailyCapacityKg"),
+    serviceAreaLabel: formData.get("serviceAreaLabel"),
+  });
+
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Data kapasitas belum valid." };
+  }
+
+  await db.profile.update({
+    where: { id: profile.id },
+    data: {
+      dailyCapacityKg: parsed.data.dailyCapacityKg,
+      serviceAreaLabel: parsed.data.serviceAreaLabel,
+    },
+  });
+
+  revalidateSettingsViews();
+  revalidatePath("/dashboard/collector/capacity");
+  revalidatePath("/dashboard/user");
+
+  return { success: true, message: "Kapasitas dan area layanan berhasil diperbarui." };
+}
+
 export async function getSettingsActorRole() {
   const profile = await requireProfile();
   return profile.role;
@@ -390,7 +421,8 @@ export async function deleteUserAccount() {
     });
   });
 
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  cookieStore.delete("cw-session");
+  cookieStore.delete("cool-waste-demo-email");
 }

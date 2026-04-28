@@ -202,7 +202,7 @@ export default function LoginPage() {
 
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <Shield className="h-3.5 w-3.5 shrink-0" />
-              Dilindungi oleh Supabase Auth · Data Anda aman dan terenkripsi
+              Autentikasi aman · Password dienkripsi dengan bcrypt
             </div>
           </div>
         </div>

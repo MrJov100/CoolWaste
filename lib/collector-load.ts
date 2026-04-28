@@ -21,36 +21,62 @@ export function getJakartaDayBounds(now = new Date()) {
 
 export async function syncCollectorDailyLoads(collectorIds: string[]) {
   if (!collectorIds.length) {
-    return new Map<string, number>();
+    return {
+      loadMap: new Map<string, number>(),
+      usedMap: new Map<string, number>(),
+    };
   }
 
   const uniqueCollectorIds = [...new Set(collectorIds)];
   const { start, end } = getJakartaDayBounds();
-  const groupedLoads = await db.pickupRequest.groupBy({
-    by: ["collectorId"],
-    where: {
-      collectorId: { in: uniqueCollectorIds },
-      status: {
-        in: [PickupStatus.TERJADWAL, PickupStatus.DALAM_PERJALANAN],
-      },
-      scheduledAt: {
-        gte: start,
-        lt: end,
-      },
-    },
-    _sum: {
-      estimatedWeightKg: true,
-    },
-  });
 
+  // Fetch active pickups (TERJADWAL + DALAM_PERJALANAN) — these count toward matching capacity.
+  // Include pickups with scheduledAt within today OR scheduledAt null (batch accepted, not yet assigned).
+  const [activePickups, completedPickups] = await Promise.all([
+    db.pickupRequest.findMany({
+      where: {
+        collectorId: { in: uniqueCollectorIds },
+        status: { in: [PickupStatus.TERJADWAL, PickupStatus.DALAM_PERJALANAN] },
+        OR: [
+          { scheduledAt: { gte: start, lt: end } },
+          { scheduledAt: null },
+        ],
+      },
+      select: { collectorId: true, estimatedWeightKg: true },
+    }),
+    // Completed pickups today — use actualWeightKg for display accuracy.
+    db.pickupRequest.findMany({
+      where: {
+        collectorId: { in: uniqueCollectorIds },
+        status: PickupStatus.SELESAI,
+        completedAt: { gte: start, lt: end },
+      },
+      select: { collectorId: true, actualWeightKg: true, estimatedWeightKg: true },
+    }),
+  ]);
+
+  // loadMap = active weight only (used for capacity matching)
   const loadMap = new Map<string, number>();
+  // usedMap = active + completed today (used for display "terpakai hari ini")
+  const usedMap = new Map<string, number>();
+
   for (const collectorId of uniqueCollectorIds) {
     loadMap.set(collectorId, 0);
+    usedMap.set(collectorId, 0);
   }
 
-  for (const entry of groupedLoads) {
-    if (entry.collectorId) {
-      loadMap.set(entry.collectorId, entry._sum.estimatedWeightKg ?? 0);
+  for (const pickup of activePickups) {
+    if (pickup.collectorId) {
+      const prev = loadMap.get(pickup.collectorId) ?? 0;
+      loadMap.set(pickup.collectorId, prev + pickup.estimatedWeightKg);
+      usedMap.set(pickup.collectorId, (usedMap.get(pickup.collectorId) ?? 0) + pickup.estimatedWeightKg);
+    }
+  }
+
+  for (const pickup of completedPickups) {
+    if (pickup.collectorId) {
+      const weight = pickup.actualWeightKg ?? pickup.estimatedWeightKg;
+      usedMap.set(pickup.collectorId, (usedMap.get(pickup.collectorId) ?? 0) + weight);
     }
   }
 
@@ -63,10 +89,10 @@ export async function syncCollectorDailyLoads(collectorIds: string[]) {
     ),
   );
 
-  return loadMap;
+  return { loadMap, usedMap };
 }
 
 export async function syncCollectorDailyLoad(collectorId: string) {
-  const loadMap = await syncCollectorDailyLoads([collectorId]);
+  const { loadMap } = await syncCollectorDailyLoads([collectorId]);
   return loadMap.get(collectorId) ?? 0;
 }

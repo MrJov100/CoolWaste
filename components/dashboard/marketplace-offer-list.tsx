@@ -306,6 +306,15 @@ function CollectorActions({ offer }: { offer: PickupRequestCard }) {
     );
   }
 
+  // Only show completion form when collector has already started the route
+  if (offer.status !== PickupStatus.DALAM_PERJALANAN) {
+    return (
+      <p className="rounded-2xl border border-white/[0.06] bg-slate-950/40 px-4 py-3 text-xs text-slate-400">
+        Mulai rute perjalanan terlebih dahulu untuk mengaktifkan fitur selesaikan pickup.
+      </p>
+    );
+  }
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-slate-950/40 p-4">
       <p className="mb-3 text-xs font-medium text-slate-300">Selesaikan pickup</p>
@@ -335,10 +344,13 @@ function CollectorActions({ offer }: { offer: PickupRequestCard }) {
 
 function RatingForm({ pickupId }: { pickupId: string }) {
   return (
-    <div className="rounded-2xl border border-amber-500/20 bg-amber-950/20 p-4">
-      <p className="mb-3 flex items-center gap-1.5 text-sm font-medium text-amber-300">
-        <Star className="h-4 w-4" /> Bagaimana pelayanan collector?
+    <div className="relative overflow-hidden rounded-2xl border-2 border-amber-400/60 bg-amber-950/20 p-4 shadow-[0_0_16px_rgba(251,191,36,0.15)] animate-pulse-border">
+      {/* Glow accent */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+      <p className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-amber-300">
+        <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> Nilai pengalaman pickupmu!
       </p>
+      <p className="mb-3 text-xs text-amber-200/60">Bantu kami dan collector berkembang — rating hanya butuh 5 detik.</p>
       <form action={submitRating.bind(null, pickupId)} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
         <Select name="score" required defaultValue="5">
           <option value="5">⭐⭐⭐⭐⭐ Bagus Sekali</option>
@@ -348,7 +360,13 @@ function RatingForm({ pickupId }: { pickupId: string }) {
           <option value="1">⭐ Sangat Buruk</option>
         </Select>
         <Input name="comment" placeholder="Komentar (opsional)..." />
-        <Button type="submit" size="sm" variant="secondary">Kirim</Button>
+        <Button
+          type="submit"
+          size="sm"
+          className="border border-amber-400/40 bg-amber-400 font-semibold text-slate-900 hover:bg-amber-300"
+        >
+          Kirim Rating
+        </Button>
       </form>
     </div>
   );

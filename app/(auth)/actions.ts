@@ -1,6 +1,7 @@
 "use server";
 
 import { Role, VerificationState, WasteType } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -9,9 +10,6 @@ import { db } from "@/lib/db";
 import { DEMO_PROFILE_COOKIE } from "@/lib/auth";
 import { getDashboardPath, getDefaultWastePricingMap } from "@/lib/constants";
 import { getDevAccountByEmail, isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
-import { hasSupabaseAdminEnv, hasSupabaseAuthEnv } from "@/lib/supabase/env";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -44,26 +42,28 @@ type AuthActionState = {
 };
 
 function normalizeOptionalField(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
+  if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
   return trimmed.length ? trimmed : undefined;
 }
 
 function normalizeOptionalNumber(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return undefined;
-  }
-
+  if (typeof value !== "string") return undefined;
   const trimmed = value.trim();
-  if (!trimmed.length) {
-    return undefined;
-  }
-
+  if (!trimmed.length) return undefined;
   const parsed = Number(trimmed);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+async function setSessionCookie(email: string) {
+  const cookieStore = await cookies();
+  cookieStore.set("cw-session", email, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    // 30-day session
+    maxAge: 60 * 60 * 24 * 30,
+  });
 }
 
 export async function signIn(_: AuthActionState, formData: FormData) {
@@ -73,29 +73,21 @@ export async function signIn(_: AuthActionState, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return {
-      success: false,
-      message: "Email atau password belum valid.",
-    };
+    return { success: false, message: "Email atau password belum valid." };
   }
 
-  if (!hasSupabaseAuthEnv()) {
-    return {
-      success: false,
-      message: "Supabase auth belum dikonfigurasi. Jalankan mode demo dulu atau isi kredensial Supabase di .env.",
-    };
+  const profile = await db.profile.findUnique({ where: { email: parsed.data.email } });
+
+  if (!profile || !profile.passwordHash) {
+    return { success: false, message: "Email atau password salah." };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-
-  if (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+  const match = await bcrypt.compare(parsed.data.password, profile.passwordHash);
+  if (!match) {
+    return { success: false, message: "Email atau password salah." };
   }
 
+  await setSessionCookie(profile.email);
   redirect("/dashboard");
 }
 
@@ -127,36 +119,24 @@ export async function signUp(_: AuthActionState, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return {
-      success: false,
-      message: parsed.error.issues[0]?.message ?? "Data pendaftaran belum valid.",
-    };
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Data pendaftaran belum valid." };
   }
 
   if (parsed.data.role === "COLLECTOR") {
     if (!parsed.data.serviceAreaLabel || !parsed.data.serviceRadiusKm || !parsed.data.dailyCapacityKg) {
-      return {
-        success: false,
-        message: "Collector wajib mengisi area layanan, radius, dan kapasitas harian.",
-      };
+      return { success: false, message: "Collector wajib mengisi area layanan, radius, dan kapasitas harian." };
     }
-
     if (!parsed.data.acceptedWasteTypes?.length) {
-      return {
-        success: false,
-        message: "Collector wajib memilih minimal satu jenis sampah yang diterima.",
-      };
+      return { success: false, message: "Collector wajib memilih minimal satu jenis sampah yang diterima." };
     }
   }
 
-  if (!hasSupabaseAuthEnv() || !hasSupabaseAdminEnv()) {
-    return {
-      success: false,
-      message: "Pendaftaran akun butuh Supabase auth dan service role yang valid di .env.",
-    };
+  const existing = await db.profile.findUnique({ where: { email: parsed.data.email } });
+  if (existing) {
+    return { success: false, message: "Email sudah terdaftar. Silakan login." };
   }
 
-  const supabase = await createClient();
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
   const roleValue = parsed.data.role as Role;
   const verificationState = VerificationState.VERIFIED;
   const wastePricing = {
@@ -166,17 +146,12 @@ export async function signUp(_: AuthActionState, formData: FormData) {
     METAL: parsed.data.metalPrice ?? defaultPricing.METAL,
     GLASS: parsed.data.glassPrice ?? defaultPricing.GLASS,
   };
-  const emailRedirectTo = process.env.NEXT_PUBLIC_APP_URL
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
-    : undefined;
 
-  const adminClient = createAdminClient();
-  const { data, error } = await adminClient.auth.admin.createUser({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    email_confirm: true,
-    user_metadata: {
-      full_name: parsed.data.name,
+  const profile = await db.profile.create({
+    data: {
+      email: parsed.data.email,
+      passwordHash,
+      name: parsed.data.name,
       role: roleValue,
       phone: parsed.data.phone,
       address: parsed.data.address,
@@ -187,91 +162,31 @@ export async function signUp(_: AuthActionState, formData: FormData) {
       serviceRadiusKm: parsed.data.serviceRadiusKm,
       dailyCapacityKg: parsed.data.dailyCapacityKg,
       wastePricing,
-      acceptedWasteTypes: parsed.data.acceptedWasteTypes,
+      acceptedWasteTypes: parsed.data.acceptedWasteTypes ?? [],
     },
   });
 
-  if (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
-  }
-
-  if (data.user) {
-    const profile = await db.profile.upsert({
-      where: { email: parsed.data.email },
-      update: {
-        authUserId: data.user.id,
-        name: parsed.data.name,
-        role: roleValue,
-        phone: parsed.data.phone,
+  if (parsed.data.address) {
+    await db.savedAddress.create({
+      data: {
+        profileId: profile.id,
+        label: "Alamat utama",
         address: parsed.data.address,
         latitude: parsed.data.latitude,
         longitude: parsed.data.longitude,
-        verificationState,
-        serviceAreaLabel: parsed.data.serviceAreaLabel,
-        serviceRadiusKm: parsed.data.serviceRadiusKm,
-        dailyCapacityKg: parsed.data.dailyCapacityKg,
-        wastePricing,
-        acceptedWasteTypes: parsed.data.acceptedWasteTypes ?? [],
-      },
-      create: {
-        authUserId: data.user.id,
-        email: parsed.data.email,
-        name: parsed.data.name,
-        role: roleValue,
-        phone: parsed.data.phone,
-        address: parsed.data.address,
-        latitude: parsed.data.latitude,
-        longitude: parsed.data.longitude,
-        verificationState,
-        serviceAreaLabel: parsed.data.serviceAreaLabel,
-        serviceRadiusKm: parsed.data.serviceRadiusKm,
-        dailyCapacityKg: parsed.data.dailyCapacityKg,
-        wastePricing,
-        acceptedWasteTypes: parsed.data.acceptedWasteTypes ?? [],
+        isDefault: true,
       },
     });
-
-    if (parsed.data.address) {
-      await db.savedAddress.create({
-        data: {
-          profileId: profile.id,
-          label: "Alamat utama",
-          address: parsed.data.address,
-          latitude: parsed.data.latitude,
-          longitude: parsed.data.longitude,
-          isDefault: true,
-        },
-      });
-    }
   }
 
-  // Immediately sign in after creation to maintain session flow
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
-
-  if (!signInError) {
-    redirect(getDashboardPath(roleValue));
-  }
-
-  return {
-    success: true,
-    message: "Akun berhasil dibuat. Cek email untuk verifikasi jika diminta Supabase.",
-  };
+  await setSessionCookie(profile.email);
+  redirect(getDashboardPath(roleValue));
 }
 
 export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete(DEMO_PROFILE_COOKIE);
-
-  if (hasSupabaseAuthEnv()) {
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-  }
+  cookieStore.delete("cw-session");
   redirect("/");
 }
 
@@ -295,26 +210,12 @@ export async function switchDevAccount(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.delete(DEMO_PROFILE_COOKIE);
 
-  if (!hasSupabaseAuthEnv()) {
-    cookieStore.set(DEMO_PROFILE_COOKIE, account.email, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-    });
-    redirect(nextPath);
-  }
-
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email: account.email,
-    password: account.password,
+  cookieStore.set("cw-session", account.email, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
   });
-
-  if (error) {
-    throw new Error(`Gagal pindah ke ${account.label}: ${error.message}`);
-  }
 
   redirect(nextPath);
 }
