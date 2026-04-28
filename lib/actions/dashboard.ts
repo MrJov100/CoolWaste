@@ -25,7 +25,9 @@ import {
   expireTimedOutPendingPickups,
 } from "@/lib/pickup-maintenance";
 import { computePickupRouteSnapshot } from "@/lib/routing";
+import { savePublicUpload } from "@/lib/storage/local-upload";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 const pickupRequestSchema = z.object({
   wasteType: z.nativeEnum(WasteType),
@@ -76,7 +78,6 @@ function revalidateMarketplaceViews() {
   revalidatePath("/pickups");
   revalidatePath("/transactions");
   revalidatePath("/leaderboard");
-  revalidatePath("/showcase");
 }
 
 function getWasteKey(type: WasteType) {
@@ -1119,6 +1120,14 @@ export async function dismissPickupAlert(pickupRequestId: string) {
 }
 
 async function uploadWastePhoto(file: File, profileId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return savePublicUpload({
+      file,
+      folder: ["waste"],
+      prefix: Date.now().toString(),
+    });
+  }
+
   const client = createAdminClient();
   const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
   const extension = file.name.split(".").pop() ?? "jpg";

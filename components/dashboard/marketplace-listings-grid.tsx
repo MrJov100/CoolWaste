@@ -30,6 +30,17 @@ import { Badge } from "@/components/ui/badge";
 
 type ActionState = { success: boolean; message: string };
 const initialState: ActionState = { success: false, message: "" };
+const DEV_SAMPLE_IMAGE_PATH = "/uploads/waste/browser-test-valid.jpg";
+
+type WasteAiSuggestion = {
+  predictedClass: WasteType | null;
+  rawPredictedClass: string | null;
+  confidence: number | null;
+  reviewRequired: boolean;
+  autoApplied: boolean;
+  caseId: string | null;
+  candidates: Array<{ wasteType: WasteType; confidence: number | null }>;
+};
 
 const WASTE_ICONS: Record<string, string> = {
   plastic: "🧴",
@@ -70,6 +81,9 @@ export function MarketplaceListingsGrid({
   const [weightError, setWeightError] = useState<string>("");
   const [photoError, setPhotoError] = useState<string>("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<WasteAiSuggestion | null>(null);
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [aiMessage, setAiMessage] = useState("");
 
   const MIN_WEIGHT = 3;
   const weightNum = parseFloat(weight) || 0;
@@ -88,13 +102,15 @@ export function MarketplaceListingsGrid({
       setShowSuccess(true);
       clearPhoto();
       setWeight("");
+      setAiSuggestion(null);
+      setAiStatus("idle");
+      setAiMessage("");
       formRef.current?.reset();
       setWasteType(WasteType.PLASTIC);
       setSlot(PickupSlot.PAGI);
       const t = setTimeout(() => setShowSuccess(false), 5000);
       return () => clearTimeout(t);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.success]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -102,17 +118,106 @@ export function MarketplaceListingsGrid({
     if (!file) return;
     setPhotoFile(file);
     setPhotoError("");
+    setAiSuggestion(null);
+    setAiStatus("loading");
+    setAiMessage("AI sedang menganalisis foto sampah...");
     const reader = new FileReader();
     reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
+    void classifyPhoto(file);
   }
 
   function clearPhoto() {
     setPhotoFile(null);
     setPhotoPreview(null);
+    setAiSuggestion(null);
+    setAiStatus("idle");
+    setAiMessage("");
     if (photoInputRef.current) {
       photoInputRef.current.value = "";
     }
+  }
+
+  async function useDevSampleImage() {
+    try {
+      setPhotoError("");
+      setAiSuggestion(null);
+      setAiStatus("loading");
+      setAiMessage("Memuat sampel lokal untuk pengujian AI...");
+
+      const response = await fetch(DEV_SAMPLE_IMAGE_PATH, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Gagal memuat sampel lokal untuk pengujian AI.");
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], "browser-test-valid.jpg", {
+        type: blob.type || "image/jpeg",
+      });
+
+      setPhotoFile(file);
+      setPhotoPreview(DEV_SAMPLE_IMAGE_PATH);
+      await classifyPhoto(file);
+    } catch (error) {
+      setAiStatus("error");
+      setAiMessage(error instanceof Error ? error.message : "Gagal memuat sampel AI lokal.");
+    }
+  }
+
+  async function classifyPhoto(file: File) {
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+
+      const response = await fetch("/api/ai/waste-classify", {
+        method: "POST",
+        body: formData,
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message ?? "AI classifier tidak tersedia saat ini.");
+      }
+
+      const suggestion = payload.data as WasteAiSuggestion;
+      setAiSuggestion(suggestion);
+      setAiStatus("success");
+
+      if (suggestion.predictedClass && suggestion.autoApplied) {
+        setWasteType(suggestion.predictedClass);
+        setAiMessage(
+          `AI mendeteksi ${titleCase(suggestion.predictedClass)}${
+            suggestion.confidence != null ? ` dengan confidence ${Math.round(suggestion.confidence * 100)}%` : ""
+          }. Jenis sampah sudah dipilih otomatis.`,
+        );
+        return;
+      }
+
+      if (suggestion.predictedClass) {
+        setAiMessage(
+          `AI menyarankan ${titleCase(suggestion.predictedClass)}${
+            suggestion.confidence != null ? ` (${Math.round(suggestion.confidence * 100)}%)` : ""
+          }. Tinjau dulu sebelum submit.`,
+        );
+        return;
+      }
+
+      setAiMessage("AI belum bisa menentukan kategori sampah dari foto ini. Pilih manual.");
+    } catch (error) {
+      setAiStatus("error");
+      setAiMessage(error instanceof Error ? error.message : "AI classifier tidak tersedia saat ini.");
+    }
+  }
+
+  function applyAiSuggestion() {
+    if (!aiSuggestion?.predictedClass) return;
+    setWasteType(aiSuggestion.predictedClass);
+    setAiMessage(
+      `Saran AI diterapkan ke ${titleCase(aiSuggestion.predictedClass)}${
+        aiSuggestion.confidence != null ? ` (${Math.round(aiSuggestion.confidence * 100)}%)` : ""
+      }.`,
+    );
   }
 
   function handleWeightChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -293,6 +398,64 @@ export function MarketplaceListingsGrid({
               <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
                 <AlertCircle className="h-3 w-3" /> {photoError}
               </p>
+            )}
+            {process.env.NODE_ENV !== "production" ? (
+              <button
+                type="button"
+                onClick={() => void useDevSampleImage()}
+                className="mt-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/15"
+              >
+                Tes AI dengan sampel lokal
+              </button>
+            ) : null}
+            {aiStatus !== "idle" && !photoError && (
+              <div
+                className={`mt-3 rounded-2xl border p-3 text-sm ${
+                  aiStatus === "loading"
+                    ? "border-cyan-500/20 bg-cyan-500/10 text-cyan-200"
+                    : aiStatus === "error"
+                    ? "border-amber-500/20 bg-amber-500/10 text-amber-200"
+                    : aiSuggestion?.autoApplied
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+                    : "border-white/10 bg-white/[0.03] text-slate-200"
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  {aiStatus === "loading" ? (
+                    <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
+                  ) : aiStatus === "error" ? (
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  ) : (
+                    <Sparkles className="mt-0.5 h-4 w-4 shrink-0" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">Analisis AI foto sampah</p>
+                    <p className="mt-1 text-xs text-current/80">{aiMessage}</p>
+                    {aiSuggestion?.candidates?.length ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {aiSuggestion.candidates.slice(0, 3).map((candidate) => (
+                          <span
+                            key={candidate.wasteType}
+                            className="rounded-xl border border-white/10 bg-black/10 px-2 py-1 text-[11px]"
+                          >
+                            {titleCase(candidate.wasteType)}
+                            {candidate.confidence != null ? ` ${Math.round(candidate.confidence * 100)}%` : ""}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    {aiStatus === "success" && aiSuggestion?.predictedClass && !aiSuggestion.autoApplied ? (
+                      <button
+                        type="button"
+                        onClick={applyAiSuggestion}
+                        className="mt-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/15"
+                      >
+                        Gunakan saran AI
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

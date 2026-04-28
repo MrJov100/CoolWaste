@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { DEMO_PROFILE_COOKIE } from "@/lib/auth";
 import { getDashboardPath, getDefaultWastePricingMap } from "@/lib/constants";
 import { getDevAccountByEmail, isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
+import { hasSupabaseAdminEnv, hasSupabaseAuthEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -78,6 +79,13 @@ export async function signIn(_: AuthActionState, formData: FormData) {
     };
   }
 
+  if (!hasSupabaseAuthEnv()) {
+    return {
+      success: false,
+      message: "Supabase auth belum dikonfigurasi. Jalankan mode demo dulu atau isi kredensial Supabase di .env.",
+    };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
@@ -139,6 +147,13 @@ export async function signUp(_: AuthActionState, formData: FormData) {
         message: "Collector wajib memilih minimal satu jenis sampah yang diterima.",
       };
     }
+  }
+
+  if (!hasSupabaseAuthEnv() || !hasSupabaseAdminEnv()) {
+    return {
+      success: false,
+      message: "Pendaftaran akun butuh Supabase auth dan service role yang valid di .env.",
+    };
   }
 
   const supabase = await createClient();
@@ -250,8 +265,13 @@ export async function signUp(_: AuthActionState, formData: FormData) {
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const cookieStore = await cookies();
+  cookieStore.delete(DEMO_PROFILE_COOKIE);
+
+  if (hasSupabaseAuthEnv()) {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  }
   redirect("/");
 }
 
@@ -274,6 +294,15 @@ export async function switchDevAccount(formData: FormData) {
   const nextPath = typeof redirectTo === "string" && redirectTo.startsWith("/") ? redirectTo : "/dashboard";
   const cookieStore = await cookies();
   cookieStore.delete(DEMO_PROFILE_COOKIE);
+
+  if (!hasSupabaseAuthEnv()) {
+    cookieStore.set(DEMO_PROFILE_COOKIE, account.email, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+    });
+    redirect(nextPath);
+  }
 
   const supabase = await createClient();
   await supabase.auth.signOut();
