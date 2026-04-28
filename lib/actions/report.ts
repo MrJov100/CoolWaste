@@ -5,7 +5,9 @@ import { z } from "zod";
 
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { savePublicUpload } from "@/lib/storage/local-upload";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 import { createNotification } from "@/lib/notifications";
 
 type ActionState = { success: boolean; message: string };
@@ -48,6 +50,15 @@ async function uploadEvidence(file: File, userId: string): Promise<string | null
   }
 
   try {
+    if (!hasSupabaseAdminEnv()) {
+      const saved = await savePublicUpload({
+        file,
+        folder: ["reports", userId],
+        prefix: Date.now().toString(),
+      });
+      return saved.publicUrl;
+    }
+
     const client = createAdminClient();
     const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
     const ext = file.name.split(".").pop() ?? "jpg";
