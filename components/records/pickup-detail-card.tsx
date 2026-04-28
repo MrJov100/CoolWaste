@@ -1,12 +1,9 @@
-import Link from "next/link";
 import { format } from "date-fns";
 import {
-  ArrowRight,
   CalendarClock,
   CheckCircle2,
   Clock,
   ExternalLink,
-  Flag,
   MapPin,
   Route,
   Scale,
@@ -205,16 +202,6 @@ export function PickupDetailCard({
             </div>
           ) : null}
 
-          {/* Report link for user — only when collector is confirmed */}
-          {pickup.collectorName && pickup.status !== "MENUNGGU_MATCHING" && (
-            <Link
-              href={`/report/${pickup.requestNo}`}
-              className="flex items-center gap-2 rounded-2xl border border-red-500/15 bg-red-950/10 px-4 py-3 text-sm text-red-400 transition-all hover:bg-red-950/20"
-            >
-              <Flag className="h-4 w-4" /> Laporkan collector ini
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Link>
-          )}
         </div>
 
         {/* Right column — photo & notes */}

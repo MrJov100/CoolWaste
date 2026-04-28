@@ -30,7 +30,6 @@ import { Badge } from "@/components/ui/badge";
 
 type ActionState = { success: boolean; message: string };
 const initialState: ActionState = { success: false, message: "" };
-const DEV_SAMPLE_IMAGE_PATH = "/uploads/waste/browser-test-valid.jpg";
 
 type WasteAiSuggestion = {
   predictedClass: WasteType | null;
@@ -138,32 +137,6 @@ export function MarketplaceListingsGrid({
     }
   }
 
-  async function useDevSampleImage() {
-    try {
-      setPhotoError("");
-      setAiSuggestion(null);
-      setAiStatus("loading");
-      setAiMessage("Memuat sampel lokal untuk pengujian AI...");
-
-      const response = await fetch(DEV_SAMPLE_IMAGE_PATH, { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error("Gagal memuat sampel lokal untuk pengujian AI.");
-      }
-
-      const blob = await response.blob();
-      const file = new File([blob], "browser-test-valid.jpg", {
-        type: blob.type || "image/jpeg",
-      });
-
-      setPhotoFile(file);
-      setPhotoPreview(DEV_SAMPLE_IMAGE_PATH);
-      await classifyPhoto(file);
-    } catch (error) {
-      setAiStatus("error");
-      setAiMessage(error instanceof Error ? error.message : "Gagal memuat sampel AI lokal.");
-    }
-  }
-
   async function classifyPhoto(file: File) {
     try {
       const formData = new FormData();
@@ -247,7 +220,7 @@ export function MarketplaceListingsGrid({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_1fr]">
+    <div className="grid gap-8 xl:grid-cols-[3fr_2fr]">
       {/* ── Pickup Request Form ── */}
       <div className="rounded-3xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-sm">
         <div className="mb-6 flex items-center justify-between">
@@ -399,15 +372,6 @@ export function MarketplaceListingsGrid({
                 <AlertCircle className="h-3 w-3" /> {photoError}
               </p>
             )}
-            {process.env.NODE_ENV !== "production" ? (
-              <button
-                type="button"
-                onClick={() => void useDevSampleImage()}
-                className="mt-2 rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:bg-cyan-500/15"
-              >
-                Tes AI dengan sampel lokal
-              </button>
-            ) : null}
             {aiStatus !== "idle" && !photoError && (
               <div
                 className={`mt-3 rounded-2xl border p-3 text-sm ${
@@ -703,7 +667,6 @@ function CollectorCard({
           <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">{collector.serviceAreaLabel}</span>
-            <span className="ml-1 shrink-0 text-slate-600">· {collector.serviceRadiusKm.toFixed(0)} km</span>
           </p>
         </div>
       </div>
@@ -715,15 +678,22 @@ function CollectorCard({
             <Scale className="h-3 w-3" /> Kapasitas tersisa
           </p>
           <p className="text-xs font-medium text-slate-300">
-            {collector.remainingCapacityKg.toFixed(0)} / {collector.dailyCapacityKg.toFixed(0)} kg
+            {collector.remainingCapacityKg.toFixed(1)} / {collector.dailyCapacityKg.toFixed(0)} kg
           </p>
         </div>
+        {/* Bar: sisa kapasitas aktif (TERJADWAL + DALAM_PERJALANAN) */}
         <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
           <div
             className={`h-full rounded-full transition-all ${capacityColor}`}
             style={{ width: `${capacityPct}%` }}
           />
         </div>
+        <p className="mt-1 text-[10px] text-slate-600">
+          Terpakai hari ini: {collector.todayUsedKg.toFixed(1)} kg
+          {collector.todayUsedKg > collector.dailyCapacityKg - collector.remainingCapacityKg
+            ? ` (termasuk ${(collector.todayUsedKg - (collector.dailyCapacityKg - collector.remainingCapacityKg)).toFixed(1)} kg selesai)`
+            : ""}
+        </p>
       </div>
 
       {/* Waste types yang diterima */}

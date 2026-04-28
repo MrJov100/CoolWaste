@@ -94,7 +94,7 @@ export async function getAssignableCollectors(params: {
     orderBy: [{ currentLoadKg: "asc" }, { updatedAt: "desc" }],
   });
 
-  const loadMap = await syncCollectorDailyLoads(collectors.map((collector) => collector.id));
+  const { loadMap } = await syncCollectorDailyLoads(collectors.map((collector) => collector.id));
 
   const areaCollectors = collectors
     .map((collector) => {

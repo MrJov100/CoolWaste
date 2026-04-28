@@ -12,6 +12,7 @@ import {
   WasteType,
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireRole } from "@/lib/auth";
@@ -26,8 +27,6 @@ import {
 } from "@/lib/pickup-maintenance";
 import { computePickupRouteSnapshot } from "@/lib/routing";
 import { savePublicUpload } from "@/lib/storage/local-upload";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { hasSupabaseAdminEnv } from "@/lib/supabase/env";
 
 const pickupRequestSchema = z.object({
   wasteType: z.nativeEnum(WasteType),
@@ -153,12 +152,23 @@ async function openPickupChatsForBatch(batchId: string, collectorId: string, sch
       },
     });
 
+    const scheduledDateStr = scheduledAt.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "numeric",
+      year: "numeric",
+    });
+    const scheduledTimeStr = scheduledAt.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
     await db.$transaction([
       db.chatMessage.create({
         data: {
           threadId: thread.id,
           senderId: collectorId,
-          content: `Pickup ${request.requestNo} telah diterima. Jadwal pickup: ${scheduledAt.toLocaleString("id-ID")}.`,
+          content: `📦 Pickup ${request.requestNo} telah diterima.\n\nJadwal pickup: ${scheduledDateStr}, ${scheduledTimeStr}`,
           isSystemMessage: true,
         },
       }),
@@ -261,6 +271,15 @@ async function assignPickupToBatch(pickupRequestId: string) {
       },
     });
   }
+
+  // Notify collector about new batch assignment
+  await createNotification({
+    profileId: candidate.id,
+    type: "PICKUP_MATCHED",
+    title: "Batch pickup baru menunggu konfirmasi 📦",
+    body: `Pickup baru dari ${pickup.areaLabel} masuk ke batch rute ${PICKUP_SLOT_LABEL[pickup.pickupSlot]}. Cek dashboard untuk konfirmasi.`,
+    pickupRequestId: pickup.id,
+  });
 }
 
 export async function createPickupRequest(_: ActionState, formData: FormData) {
@@ -519,7 +538,13 @@ export async function startPickupBatch(batchId: string) {
     include: {
       requests: {
         where: { status: PickupStatus.TERJADWAL },
-        select: { id: true, userId: true, requestNo: true },
+        select: {
+          id: true,
+          userId: true,
+          requestNo: true,
+          routeDurationSeconds: true,
+          routeDistanceMeters: true,
+        },
       },
     },
   });
@@ -539,13 +564,40 @@ export async function startPickupBatch(batchId: string) {
     }),
   ]);
 
-  // Notify each user that collector is on the way
+  const { formatDurationSeconds, formatDistanceMeters } = await import("@/lib/routing");
+
   for (const request of batch.requests) {
+    const durasiStr = formatDurationSeconds(request.routeDurationSeconds) ?? "tidak diketahui";
+    const jarakStr = formatDistanceMeters(request.routeDistanceMeters) ?? "tidak diketahui";
+
+    // Kirim pesan sistem ke thread chat pickup ini
+    const thread = await db.chatThread.findUnique({
+      where: { pickupRequestId: request.id },
+      select: { id: true },
+    });
+
+    if (thread) {
+      await db.$transaction([
+        db.chatMessage.create({
+          data: {
+            threadId: thread.id,
+            senderId: collector.id,
+            content: `🚛 Collector sedang dalam perjalanan menuju lokasi pickup #${request.requestNo}.\n\nEstimasi: ${durasiStr} (${jarakStr}). Pastikan sampah sudah siap di lokasi.`,
+            isSystemMessage: true,
+          },
+        }),
+        db.chatThread.update({
+          where: { id: thread.id },
+          data: { lastMessageAt: new Date() },
+        }),
+      ]);
+    }
+
     await createNotification({
       profileId: request.userId,
       type: "PICKUP_DALAM_PERJALANAN",
       title: "Collector sedang dalam perjalanan 🚛",
-      body: `Collector menuju lokasi pickup #${request.requestNo}. Pastikan sampah sudah siap!`,
+      body: `Collector menuju lokasi pickup #${request.requestNo}. Estimasi tiba: ${durasiStr}.`,
       pickupRequestId: request.id,
     });
   }
@@ -603,6 +655,21 @@ export async function completePickupRequest(pickupRequestId: string, formData: F
         completedAt,
       },
     });
+
+    // Reduce collector's active load — currentLoadKg tracks only active (scheduled/in-transit)
+    // weight, so completing a pickup frees up that capacity for new assignments.
+    // Guard against going below 0 in case of any earlier sync drift.
+    const collectorProfile = await tx.profile.findUniqueOrThrow({
+      where: { id: collector.id },
+      select: { currentLoadKg: true },
+    });
+    await tx.profile.update({
+      where: { id: collector.id },
+      data: {
+        currentLoadKg: Math.max(0, collectorProfile.currentLoadKg - pickup.estimatedWeightKg),
+      },
+    });
+
     const completedAtStr = completedAt.toLocaleString("id-ID", {
       day: "2-digit",
       month: "long",
@@ -683,6 +750,7 @@ export async function completePickupRequest(pickupRequestId: string, formData: F
   });
 
   revalidateMarketplaceViews();
+  redirect("/pickups");
 }
 
 export async function verifyCollector(collectorId: string) {
@@ -1119,34 +1187,10 @@ export async function dismissPickupAlert(pickupRequestId: string) {
   revalidateMarketplaceViews();
 }
 
-async function uploadWastePhoto(file: File, profileId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return savePublicUpload({
-      file,
-      folder: ["waste"],
-      prefix: Date.now().toString(),
-    });
-  }
-
-  const client = createAdminClient();
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
-  const extension = file.name.split(".").pop() ?? "jpg";
-  const path = `${profileId}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
-
-  const { error } = await client.storage.from(bucket).upload(path, await file.arrayBuffer(), {
-    contentType: file.type || "image/jpeg",
-    upsert: false,
+async function uploadWastePhoto(file: File, _profileId: string) {
+  return savePublicUpload({
+    file,
+    folder: ["waste"],
+    prefix: Date.now().toString(),
   });
-
-  if (error) {
-    throw new Error(`Gagal upload foto: ${error.message}`);
-  }
-
-  const { data } = client.storage.from(bucket).getPublicUrl(path);
-
-  return {
-    path,
-    publicUrl: data.publicUrl,
-    mimeType: file.type || "image/jpeg",
-  };
 }

@@ -25,6 +25,133 @@ import type {
 } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
+export async function countUnratedPickupsForUser(userId: string): Promise<number> {
+  const pickups = await db.pickupRequest.findMany({
+    where: {
+      userId,
+      status: PickupStatus.SELESAI,
+      collectorId: { not: null },
+    },
+    select: {
+      id: true,
+      ratings: {
+        where: { fromUserId: userId },
+        select: { id: true },
+      },
+    },
+    take: 50,
+  });
+
+  return pickups.filter((p) => p.ratings.length === 0).length;
+}
+
+export async function getCollectorRatingsPage(collectorId: string) {
+  const [ratings, profile] = await Promise.all([
+    db.rating.findMany({
+      where: { toUserId: collectorId },
+      include: {
+        pickupRequest: { select: { requestNo: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.profile.findUniqueOrThrow({
+      where: { id: collectorId },
+      select: { name: true, dailyCapacityKg: true, currentLoadKg: true, serviceAreaLabel: true },
+    }),
+  ]);
+
+  const totalRatings = ratings.length;
+  const average = totalRatings
+    ? ratings.reduce((sum, r) => sum + r.score, 0) / totalRatings
+    : 0;
+
+  const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  for (const r of ratings) {
+    distribution[r.score] = (distribution[r.score] ?? 0) + 1;
+  }
+
+  return {
+    collectorName: profile.name,
+    totalRatings,
+    average,
+    distribution,
+    reviews: ratings.map((r) => ({
+      id: r.id,
+      score: r.score,
+      comment: r.comment,
+      createdAt: r.createdAt,
+      pickupRequestNo: r.pickupRequest.requestNo,
+    })),
+  };
+}
+
+export async function getCollectorCapacityPage(collectorId: string) {
+  const currentLoad = await syncCollectorDailyLoad(collectorId);
+  const profile = await db.profile.findUniqueOrThrow({
+    where: { id: collectorId },
+    select: {
+      name: true,
+      serviceAreaLabel: true,
+      serviceRadiusKm: true,
+      dailyCapacityKg: true,
+      currentLoadKg: true,
+      acceptedWasteTypes: true,
+      wastePricing: true,
+      verificationState: true,
+    },
+  });
+
+  return {
+    ...profile,
+    currentLoadKg: currentLoad,
+    remainingCapacityKg: Math.max((profile.dailyCapacityKg ?? 0) - currentLoad, 0),
+  };
+}
+
+export async function getCollectorPerformancePage(collectorId: string) {
+  const [stats, profile, ratings] = await Promise.all([
+    getCollectorPickupStats(collectorId),
+    db.profile.findUniqueOrThrow({
+      where: { id: collectorId },
+      select: { name: true },
+    }),
+    db.rating.findMany({
+      where: { toUserId: collectorId },
+      include: {
+        pickupRequest: { select: { requestNo: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const totalRatings = ratings.length;
+  const average = totalRatings
+    ? ratings.reduce((sum, r) => sum + r.score, 0) / totalRatings
+    : 0;
+
+  const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  for (const r of ratings) {
+    distribution[r.score] = (distribution[r.score] ?? 0) + 1;
+  }
+
+  return {
+    collectorName: profile.name,
+    stats,
+    ratings: {
+      totalRatings,
+      average,
+      distribution,
+      reviews: ratings.map((r) => ({
+        id: r.id,
+        score: r.score,
+        comment: r.comment,
+        createdAt: r.createdAt,
+        pickupRequestNo: r.pickupRequest.requestNo,
+      })),
+    },
+  };
+}
+
 export async function getLandingStats() {
   const [profiles, collectors, pickups, transactions] = await Promise.all([
     db.profile.count(),
@@ -144,9 +271,12 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
     })
   ).map((collector) => collector.id);
 
-  await syncCollectorDailyLoads(collectorIds);
+  // Sync loads and get fresh currentLoadKg values before querying collectors
+  const { loadMap, usedMap } = await syncCollectorDailyLoads(collectorIds);
 
-  const [profile, savedAddresses, availableCollectors, myPickups, incomeSum, completedByType] = await Promise.all([
+  // Run all non-collector queries in parallel, then query collectors separately
+  // so we read freshly-synced currentLoadKg from DB (not stale cache)
+  const [profile, savedAddresses, rawCollectors, myPickups, incomeSum, completedByType] = await Promise.all([
     db.profile.findUniqueOrThrow({ where: { id: profileId } }),
     db.savedAddress.findMany({
       where: { profileId },
@@ -157,7 +287,7 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
         role: Role.COLLECTOR,
         verificationState: VerificationState.VERIFIED,
       },
-      orderBy: [{ currentLoadKg: "asc" }, { updatedAt: "desc" }],
+      orderBy: [{ updatedAt: "desc" }],
       take: 6,
     }),
     db.pickupRequest.findMany({
@@ -177,6 +307,20 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
       orderBy: { _sum: { actualWeightKg: "desc" } },
     }),
   ]);
+
+  // Use the loadMap returned by sync as the authoritative currentLoadKg source,
+  // then sort collectors by remaining capacity (most available first)
+  const availableCollectors = rawCollectors
+    .map((c) => ({
+      ...c,
+      currentLoadKg: loadMap.get(c.id) ?? c.currentLoadKg,
+      todayUsedKg: usedMap.get(c.id) ?? 0,
+    }))
+    .sort((a, b) => {
+      const remA = Math.max((a.dailyCapacityKg ?? 0) - a.currentLoadKg, 0);
+      const remB = Math.max((b.dailyCapacityKg ?? 0) - b.currentLoadKg, 0);
+      return remB - remA;
+    });
 
   const waitingCount = myPickups.filter((item) => item.status === PickupStatus.MENUNGGU_MATCHING).length;
   const scheduledCount = myPickups.filter((item) => item.status === PickupStatus.TERJADWAL).length;
@@ -207,9 +351,9 @@ async function getUserDashboard(profileId: string): Promise<UserDashboardData> {
       id: collector.id,
       collectorName: collector.name,
       serviceAreaLabel: collector.serviceAreaLabel ?? collector.address ?? "Area belum diatur",
-      serviceRadiusKm: collector.serviceRadiusKm ?? 0,
       dailyCapacityKg: collector.dailyCapacityKg ?? 0,
       remainingCapacityKg: Math.max((collector.dailyCapacityKg ?? 0) - collector.currentLoadKg, 0),
+      todayUsedKg: collector.todayUsedKg,
       wastePricing: normalizeWastePricingMap(collector.wastePricing),
       acceptedWasteTypes: collector.acceptedWasteTypes,
       verificationState: collector.verificationState,

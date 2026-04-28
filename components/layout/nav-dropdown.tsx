@@ -24,9 +24,10 @@ import { signOut } from "@/app/(auth)/actions";
 type NavUserDropdownProps = {
   name: string;
   role: string;
+  unratedCount?: number;
 };
 
-export function NavUserDropdown({ name, role }: NavUserDropdownProps) {
+export function NavUserDropdown({ name, role, unratedCount = 0 }: NavUserDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -51,8 +52,13 @@ export function NavUserDropdown({ name, role }: NavUserDropdownProps) {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/[0.10]"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-emerald-950">
+        <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-emerald-950">
           {initials}
+          {unratedCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full border border-slate-950 bg-amber-400 px-0.5 text-[9px] font-bold text-slate-900">
+              {unratedCount > 9 ? "9+" : unratedCount}
+            </span>
+          )}
         </span>
         <span className="hidden max-w-[120px] truncate sm:block">{name}</span>
         <ChevronDown
@@ -95,6 +101,11 @@ export function NavUserDropdown({ name, role }: NavUserDropdownProps) {
               >
                 <Star className="h-4 w-4 text-slate-400" />
                 Rating Pickup
+                {unratedCount > 0 && (
+                  <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold text-slate-900">
+                    {unratedCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/transactions"

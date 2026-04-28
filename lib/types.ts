@@ -82,9 +82,9 @@ export type CollectorServiceCard = {
   id: string;
   collectorName: string;
   serviceAreaLabel: string;
-  serviceRadiusKm: number;
   dailyCapacityKg: number;
   remainingCapacityKg: number;
+  todayUsedKg: number;
   wastePricing: WastePricingMap;
   acceptedWasteTypes: WasteType[];
   verificationState: VerificationState;

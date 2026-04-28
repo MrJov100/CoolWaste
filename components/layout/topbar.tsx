@@ -9,6 +9,7 @@ import { MobileNav, NavUserDropdown } from "@/components/layout/nav-dropdown";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABEL } from "@/lib/constants";
 import { countUnreadChatsForProfile, getChatThreadsForProfile } from "@/lib/data/chat";
+import { countUnratedPickupsForUser } from "@/lib/data/dashboard";
 import { isDevAccountSwitcherEnabled } from "@/lib/dev-accounts";
 import { getNotificationsForProfile, countUnreadNotifications } from "@/lib/notifications";
 import type { NotificationEntry } from "@/lib/notifications";
@@ -16,15 +17,17 @@ import type { SmartWasteProfile } from "@/lib/types";
 
 export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }) {
   const isChatUser = profile && (profile.role === "USER" || profile.role === "COLLECTOR");
+  const isUser = profile?.role === "USER";
 
-  const [unreadChats, chatThreads, notifications, unreadNotifications] = isChatUser
+  const [unreadChats, chatThreads, notifications, unreadNotifications, unratedPickups] = isChatUser
     ? await Promise.all([
         countUnreadChatsForProfile(profile.id, profile.role),
         getChatThreadsForProfile({ profileId: profile.id, role: profile.role }),
         getNotificationsForProfile(profile.id),
         countUnreadNotifications(profile.id),
+        isUser ? countUnratedPickupsForUser(profile.id) : Promise.resolve(0),
       ])
-    : [0, [], [], 0];
+    : [0, [], [], 0, 0];
 
   const roleLabel = profile ? ROLE_LABEL[profile.role] : "";
 
@@ -75,6 +78,7 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
                 <NavUserDropdown
                   name={profile.name}
                   role={roleLabel}
+                  unratedCount={unratedPickups as number}
                 />
               </div>
             </>
