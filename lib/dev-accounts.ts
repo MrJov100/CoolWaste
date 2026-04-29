@@ -1,28 +1,28 @@
 export const DEV_ACCOUNTS = [
   {
     label: "🛡️ Admin CoolWaste",
-    email: "master.admin@smartwaste.id",
+    email: "admin@coolwaste.id",
     password: "Admin@CoolWaste2024",
   },
   {
-    label: "User Jovandi",
-    email: "logictime2021@gmail.com",
-    password: "jovandi123",
+    label: "User Budi",
+    email: "budi@example.com",
+    password: "password123",
   },
   {
-    label: "Collector Budi",
-    email: "budisantoso@gmail.com",
-    password: "budi123",
+    label: "User Siti",
+    email: "siti@example.com",
+    password: "password123",
   },
   {
-    label: "Collector Michael",
-    email: "jovandiprodana@gmail.com",
-    password: "jovandi123",
+    label: "Collector Andika",
+    email: "andika@example.com",
+    password: "password123",
   },
   {
-    label: "Collector Adam",
-    email: "adam@gmail.com",
-    password: "adam123",
+    label: "Collector Dini",
+    email: "dini.collector@example.com",
+    password: "password123",
   },
 ] as const;
 
