@@ -200,17 +200,28 @@ export async function switchDevAccount(formData: FormData) {
     throw new Error("Email akun developer tidak valid.");
   }
 
-  const account = getDevAccountByEmail(email);
-  if (!account) {
-    throw new Error("Akun developer tidak ditemukan.");
+  const devAccount = getDevAccountByEmail(email);
+  if (!devAccount) {
+    throw new Error("Akun developer tidak ditemukan di daftar DEV_ACCOUNTS.");
+  }
+
+  // Authenticate with actual password so this works correctly with real DB
+  const profile = await db.profile.findUnique({ where: { email: devAccount.email } });
+  if (!profile || !profile.passwordHash) {
+    throw new Error(`Profil "${devAccount.label}" belum ada di database. Jalankan seed terlebih dahulu.`);
+  }
+
+  const match = await bcrypt.compare(devAccount.password, profile.passwordHash);
+  if (!match) {
+    throw new Error(`Password dev untuk "${devAccount.label}" tidak cocok dengan database.`);
   }
 
   const redirectTo = formData.get("redirectTo");
   const nextPath = typeof redirectTo === "string" && redirectTo.startsWith("/") ? redirectTo : "/dashboard";
+
   const cookieStore = await cookies();
   cookieStore.delete(DEMO_PROFILE_COOKIE);
-
-  cookieStore.set("cw-session", account.email, {
+  cookieStore.set("cw-session", profile.email, {
     path: "/",
     httpOnly: true,
     sameSite: "lax",

@@ -4,7 +4,6 @@ import { LayoutDashboard, Leaf } from "lucide-react";
 import { FloatingChatWidget } from "@/components/chat/floating-chat-widget";
 import { NotificationButton } from "@/components/notifications/notification-button";
 import { DevAccountSwitcher } from "@/components/layout/dev-account-switcher";
-import { DemoSwitcher } from "@/components/layout/demo-switcher";
 import { MobileNav, NavUserDropdown } from "@/components/layout/nav-dropdown";
 import { Button } from "@/components/ui/button";
 import { ROLE_LABEL } from "@/lib/constants";
@@ -52,11 +51,10 @@ export async function Topbar({ profile }: { profile?: SmartWasteProfile | null }
         <nav className="hidden items-center gap-1 lg:flex">
           {profile ? (
             <>
-              {/* Dev / Demo tools – only visible in dev */}
+              {/* Dev tools – only visible outside production */}
               {isDevAccountSwitcherEnabled() ? (
                 <DevAccountSwitcher currentEmail={profile.email} />
               ) : null}
-              <DemoSwitcher currentEmail={profile.email} />
 
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="gap-2">

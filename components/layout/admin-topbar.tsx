@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Leaf, LogOut } from "lucide-react";
+import { Leaf } from "lucide-react";
 
-import { signOut } from "@/app/(auth)/actions";
+import { AdminLogoutButton } from "@/components/layout/admin-logout-button";
 import { AdminNotificationButton } from "@/components/notifications/admin-notification-button";
-import { Button } from "@/components/ui/button";
 import { getOpenReportsCount, getRecentReportsForNotification } from "@/lib/data/admin";
 import type { SmartWasteProfile } from "@/lib/types";
 
@@ -49,17 +48,7 @@ export async function AdminTopbar({
               <span className="text-xs text-emerald-400">Administrator</span>
             </div>
           )}
-          <form action={signOut}>
-            <Button
-              type="submit"
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden lg:inline">Keluar</span>
-            </Button>
-          </form>
+          <AdminLogoutButton />
         </div>
       </div>
     </header>

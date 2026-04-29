@@ -1,17 +1,20 @@
 import { Role, VerificationState } from "@prisma/client";
 import { format } from "date-fns";
-import { CheckCircle2, ShieldCheck, ShieldX, Users, XCircle } from "lucide-react";
+import { CheckCircle2, Users, XCircle } from "lucide-react";
 
 import { AdminTopbar } from "@/components/layout/admin-topbar";
-import { DeleteUserForm } from "./delete-user-form";
-import { blockUser, rejectCollector, unblockUser } from "@/lib/actions/admin";
-import { verifyCollector } from "@/lib/actions/dashboard";
 import { requireRole } from "@/lib/auth";
 import { getAdminUsers } from "@/lib/data/admin";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
+import {
+  BlockUserButton,
+  DeleteUserButton,
+  RejectCollectorButton,
+  UnblockUserButton,
+  VerifyCollectorButton,
+} from "./user-action-buttons";
 
 export default async function AdminUsersPage() {
   const profile = await requireRole(Role.ADMIN);
@@ -134,35 +137,17 @@ export default async function AdminUsersPage() {
                           <div className="flex flex-col gap-1.5">
                             {c.verificationState === VerificationState.PENDING && (
                               <>
-                                <form action={verifyCollector.bind(null, c.id)}>
-                                  <Button type="submit" size="sm" className="w-full gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
-                                    <ShieldCheck className="h-3.5 w-3.5" /> Verifikasi
-                                  </Button>
-                                </form>
-                                <form action={rejectCollector.bind(null, c.id)}>
-                                  <Button type="submit" size="sm" variant="outline" className="w-full gap-1.5 border-red-500/40 text-red-400 hover:bg-red-500/10 text-xs">
-                                    <ShieldX className="h-3.5 w-3.5" /> Tolak
-                                  </Button>
-                                </form>
+                                <VerifyCollectorButton collectorId={c.id} collectorName={c.name} />
+                                <RejectCollectorButton collectorId={c.id} collectorName={c.name} />
                               </>
                             )}
                             {c.verificationState === VerificationState.VERIFIED && (
-                              <form action={blockUser.bind(null, c.id)}>
-                                <input type="hidden" name="reason" value="Pelanggaran ketentuan layanan collector" />
-                                <input type="hidden" name="durationDays" value="7" />
-                                <Button type="submit" size="sm" variant="outline" className="w-full gap-1.5 border-red-500/40 text-red-400 hover:bg-red-500/10 text-xs">
-                                  <ShieldX className="h-3.5 w-3.5" /> Blokir
-                                </Button>
-                              </form>
+                              <BlockUserButton userId={c.id} userName={c.name} role="COLLECTOR" />
                             )}
                             {c.verificationState === VerificationState.REJECTED && (
-                              <form action={unblockUser.bind(null, c.id)}>
-                                <Button type="submit" size="sm" variant="outline" className="w-full gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs">
-                                  <ShieldCheck className="h-3.5 w-3.5" /> Aktifkan
-                                </Button>
-                              </form>
+                              <UnblockUserButton userId={c.id} userName={c.name} />
                             )}
-                            <DeleteUserForm userId={c.id} userName={c.name} />
+                            <DeleteUserButton userId={c.id} userName={c.name} role="COLLECTOR" />
                           </div>
                         </td>
                       </tr>
@@ -239,21 +224,11 @@ export default async function AdminUsersPage() {
                         <td className="px-4 py-4">
                           <div className="flex flex-col gap-1.5">
                             {u.verificationState === VerificationState.REJECTED ? (
-                              <form action={unblockUser.bind(null, u.id)}>
-                                <Button type="submit" size="sm" variant="outline" className="w-full gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs">
-                                  <ShieldCheck className="h-3.5 w-3.5" /> Aktifkan
-                                </Button>
-                              </form>
+                              <UnblockUserButton userId={u.id} userName={u.name} />
                             ) : (
-                              <form action={blockUser.bind(null, u.id)}>
-                                <input type="hidden" name="reason" value="Pelanggaran ketentuan layanan" />
-                                <input type="hidden" name="durationDays" value="7" />
-                                <Button type="submit" size="sm" variant="outline" className="w-full gap-1.5 border-red-500/40 text-red-400 hover:bg-red-500/10 text-xs">
-                                  <ShieldX className="h-3.5 w-3.5" /> Blokir
-                                </Button>
-                              </form>
+                              <BlockUserButton userId={u.id} userName={u.name} role="USER" />
                             )}
-                            <DeleteUserForm userId={u.id} userName={u.name} />
+                            <DeleteUserButton userId={u.id} userName={u.name} role="USER" />
                           </div>
                         </td>
                       </tr>
