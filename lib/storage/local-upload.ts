@@ -1,5 +1,11 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
 
 function normalizeExtension(fileName: string, mimeType: string) {
   const fromName = fileName.split(".").pop()?.trim().toLowerCase();
@@ -18,16 +24,24 @@ export async function savePublicUpload(params: {
 }) {
   const extension = normalizeExtension(params.file.name, params.file.type);
   const name = `${params.prefix ?? Date.now().toString()}-${crypto.randomUUID()}.${extension}`;
-  const relativePath = path.posix.join("uploads", ...params.folder, name);
-  const absolutePath = path.join(process.cwd(), "public", relativePath);
+  const storagePath = [...params.folder, name].join("/");
 
-  await mkdir(path.dirname(absolutePath), { recursive: true });
   const bytes = Buffer.from(await params.file.arrayBuffer());
-  await writeFile(absolutePath, bytes);
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(storagePath, bytes, {
+      contentType: params.file.type || "image/jpeg",
+      upsert: false,
+    });
+
+  if (error) throw new Error(`Upload gagal: ${error.message}`);
+
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
 
   return {
-    path: relativePath,
-    publicUrl: `/${relativePath}`,
+    path: storagePath,
+    publicUrl: data.publicUrl,
     mimeType: params.file.type || "image/jpeg",
   };
 }
