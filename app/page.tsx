@@ -585,7 +585,7 @@ export default async function HomePage() {
             </div>
             <span className="font-semibold">CoolWaste</span>
           </div>
-          <p>© 2025 CoolWaste · Platform Sampah Daur Ulang Indonesia</p>
+          <p>© 2026 CoolWaste · Platform Sampah Daur Ulang Indonesia</p>
           <div className="flex gap-5">
             <Link href="/leaderboard" className="hover:text-slate-300">Leaderboard</Link>
             <Link href="/login" className="hover:text-slate-300">Login</Link>

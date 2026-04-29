@@ -10,6 +10,7 @@ import {
   VerificationState,
   WasteType,
 } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -25,11 +26,15 @@ async function main() {
   await prisma.savedAddress.deleteMany();
   await prisma.profile.deleteMany();
 
+  const adminPasswordHash = await bcrypt.hash("Admin@CoolWaste2024", 12);
+  const userPasswordHash = await bcrypt.hash("password123", 12);
+
   const [admin, collectorA, collectorB, userA, userB] = await Promise.all([
     prisma.profile.create({
       data: {
-        email: "admin@smartwaste.id",
-        name: "Admin Smart Waste",
+        email: "admin@coolwaste.id",
+        passwordHash: adminPasswordHash,
+        name: "Admin CoolWaste",
         role: Role.ADMIN,
         address: "Jakarta Command Center",
       },
@@ -37,6 +42,7 @@ async function main() {
     prisma.profile.create({
       data: {
         email: "andika@example.com",
+        passwordHash: userPasswordHash,
         name: "Andika Collector",
         role: Role.COLLECTOR,
         address: "Cimahi Selatan",
@@ -58,6 +64,7 @@ async function main() {
     prisma.profile.create({
       data: {
         email: "dini.collector@example.com",
+        passwordHash: userPasswordHash,
         name: "Dini Recycle Hub",
         role: Role.COLLECTOR,
         address: "Bandung Barat",
@@ -79,6 +86,7 @@ async function main() {
     prisma.profile.create({
       data: {
         email: "budi@example.com",
+        passwordHash: userPasswordHash,
         name: "Budi Santoso",
         role: Role.USER,
         saldo: 78000,
@@ -88,6 +96,7 @@ async function main() {
     prisma.profile.create({
       data: {
         email: "siti@example.com",
+        passwordHash: userPasswordHash,
         name: "Siti Aminah",
         role: Role.USER,
         saldo: 35500,
@@ -226,7 +235,7 @@ async function main() {
   });
 
   console.log("Pickup flow seed complete", {
-    admin: admin.email,
+    admin: `${admin.email} / Admin@CoolWaste2024`,
     verifiedCollector: collectorA.email,
     pendingCollector: collectorB.email,
     users: [userA.email, userB.email],
