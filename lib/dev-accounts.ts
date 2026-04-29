@@ -1,5 +1,10 @@
 export const DEV_ACCOUNTS = [
   {
+    label: "🛡️ Admin CoolWaste",
+    email: "master.admin@smartwaste.id",
+    password: "Admin@CoolWaste2024",
+  },
+  {
     label: "User Jovandi",
     email: "logictime2021@gmail.com",
     password: "jovandi123",

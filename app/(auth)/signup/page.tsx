@@ -28,9 +28,6 @@ export default function SignUpPage() {
               <Link href="/dashboard">
                 <Button variant="ghost">Buka dashboard</Button>
               </Link>
-              <Link href="/dashboard/demo">
-                <Button variant="outline">Lihat demo view</Button>
-              </Link>
             </div>
           </div>
 

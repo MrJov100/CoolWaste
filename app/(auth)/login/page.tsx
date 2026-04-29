@@ -46,7 +46,7 @@ export default function LoginPage() {
       </header>
 
       {/* ── Main grid ── */}
-      <main className="mx-auto grid min-h-[calc(100vh-57px)] max-w-7xl items-stretch px-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <main className="mx-auto grid min-h-[calc(100vh-57px)] max-w-7xl items-stretch px-6 lg:grid-cols-[1.1fr_auto_0.9fr]">
 
         {/* ── Left: Branding ── */}
         <div className="relative flex flex-col justify-center py-16 pr-0 lg:pr-16">
@@ -117,10 +117,10 @@ export default function LoginPage() {
         </div>
 
         {/* Divider */}
-        <div className="hidden border-l border-white/[0.06] lg:block" />
+        <div className="hidden w-px self-stretch border-l border-white/[0.06] lg:block" />
 
         {/* ── Right: Form ── */}
-        <div className="flex flex-col justify-center py-16 pl-0 lg:pl-16">
+        <div className="flex flex-col justify-center pb-16 pt-0 lg:py-16 lg:pl-16">
           <div className="w-full max-w-md space-y-8">
 
             <div className="space-y-2">
@@ -174,30 +174,6 @@ export default function LoginPage() {
                   />
                 </div>
               </FormState>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-xs text-slate-600">Akses cepat tanpa login:</p>
-              <div className="flex flex-wrap gap-2">
-                <Link href="/dashboard/demo">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
-                  >
-                    Mode Demo
-                  </Button>
-                </Link>
-                <Link href="/leaderboard">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
-                  >
-                    Leaderboard
-                  </Button>
-                </Link>
-              </div>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-slate-600">
