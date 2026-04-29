@@ -1,78 +1,217 @@
-# Smart Waste Management Platform (Competition Ready)
+# CoolWaste — Smart Waste Pickup Platform
 
-Aplikasi *Smart Waste Management* dengan algoritma asimetris untuk memetakan (_matchmaking_) masyarakat (User) penjual limbah daur ulang dengan pengepul (_Collector_) terdekat secara otonom berbasis **Haversine Distance**, serta menggabungkannya ke dalam **Rute/Batch Berkelompok** guna mencapai efisiensi logistik.
+Platform manajemen sampah daur ulang yang menghubungkan **User** (penjual sampah) dengan **Collector** (pengepul) terdekat secara otomatis menggunakan algoritma **Haversine Distance** dan sistem batching rute cerdas.
 
-Dibangun khusus untuk presentasi lomba/Hackathon UI/UX & Backend, dipadatkan dengan fondasi _Clean Architecture_ dan _Server Actions_ yang kokoh.
-
-## 🔥 Fitur Utama (Selling Points)
-
-- **Auto-Matchmaking & Batching Engine:** Sistem secara instan mencarikan Collector terdekat yang masih memiliki "Sisa Kapasitas Bagasi" (Kg) tanpa perlu *scrolling* manual memakan waktu. Semua bekerja di _background API_.
-- **Transaksi *Cash on Delivery* Aktual:** Praktik _Fair Trade_. Penimbangan presisi terjadi di titik jemput, nominal pembayaran akan otomatis dihitung berdasarkan "berat aktual" dikalikan *snapshot harga per kilogram* yang berlaku detik itu.
-- **Mekanisme Pembatalan Pintar (Re-queue):** Ketika sebuah rute batal akibat kendala teknis (Misal: Collector motornya mogok), algoritma *Smart Waste* akan melempar *(re-queue)* seluruh orderan yang terbengkalai kepada Collector "aktif" lain di sekitarnya.
-- **Sistem *Quality Control* (Rating):** Menjaga ekosistem dengan mengharuskan User menilai (Bintang 1-5) performa Collector pasca-_Pickup_ agar kualitas layanan tetap terjaga.
-
-## 🛠️ Arsitektur & Teknologi
-
-- **Kerangka Utama:** `Next.js App Router` (React Server Components + Server Actions)
-- **Database:** `PostgreSQL` diakses via `Prisma ORM`
-- **Autentikasi & Penyimpanan:** `Supabase` (_Auth User_ & _Storage Bucket_ untuk Bukti Foto)
-- **Tampilan Interaktif:** `Tailwind CSS`, komponen `shadcn/ui`, `Lucide Icons`
-
-## 📦 Model Database Inti (Prisma Schema)
-
-1. `Profile`: Konfigurasi multi-aktor (User, Collector dengan limit kapasitas, dan Admin).
-2. `PickupRequest`: Data hulu (jenis sampah, berat estimasi, titik GPS koordinat tersembunyi `latitude/longitude`).
-3. `PickupBatch`: Tabel logistik "Pengelompokan Rute" untuk Collector pada slot waktu tertentu.
-4. `Transaction`: Bukti penyerahan limbah dan nilai moneter.
-5. `Rating`: Kualitas layanan berbasis Bintang.
+**Live Demo:** [https://cool-waste.vercel.app](https://cool-waste.vercel.app)
 
 ---
 
-## 🚀 Langkah Menjalankan Aplikasi (Setup Lokal)
+## Fitur Utama
 
-Jika Anda siap menilai _codebase_ atau menguji program di mesin (*local machine*) Anda, ikuti langkah berikut:
+- **Auto-Matchmaking & Batching** — Sistem mencarikan Collector terdekat yang masih memiliki kapasitas, lalu mengelompokkan beberapa pickup ke dalam satu rute efisien secara otomatis.
+- **Transaksi Cash on Delivery** — Harga dihitung berdasarkan berat aktual saat pickup, bukan estimasi.
+- **Re-queue Otomatis** — Jika Collector membatalkan rute, semua pickup yang terdampak langsung masuk antrian ulang ke Collector lain.
+- **Rating & Quality Control** — User memberi bintang 1–5 pasca-pickup untuk menjaga kualitas ekosistem.
+- **Upload Foto Sampah** — Foto bukti sampah diupload ke Cloudinary.
+- **Chat Real-time** — User dan Collector bisa berkomunikasi per thread pickup.
+- **Admin Panel** — Manajemen user, transaksi, rating, laporan, dan statistik karbon.
+- **AI Waste Classifier** — Klasifikasi jenis sampah berbasis gambar (opsional).
 
-### 1. Kloning & Install Dependency
-Buka terminal direktori *project* ini, dan unduh seluruh modul dependensi Node.js:
+---
+
+## Tech Stack
+
+| Layer | Teknologi |
+|---|---|
+| Framework | Next.js 15+ (App Router, React Server Components, Server Actions) |
+| Database | PostgreSQL via Prisma ORM |
+| Auth | bcryptjs + cookie session (`cw-session`) |
+| File Upload | Cloudinary |
+| Routing | OpenRouteService API (fallback: Haversine) |
+| Styling | Tailwind CSS + shadcn/ui + Lucide Icons |
+| Charts | Recharts |
+
+---
+
+## Menjalankan di Lokal
+
+### Prasyarat
+
+Pastikan sudah terinstall:
+- [Node.js](https://nodejs.org) versi 18 atau lebih baru
+- [PostgreSQL](https://www.postgresql.org/download/) (bisa lokal atau layanan cloud)
+- Akun [Cloudinary](https://cloudinary.com) (gratis) untuk upload foto
+
+### 1. Clone Repositori
+
+```bash
+git clone https://github.com/MrJov100/smart-waste.git
+cd smart-waste
+```
+
+### 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
-### 2. Siapkan File Environment `.env`
-Duplikat file `.env.example` dan ubah namanya menjadi `.env`.
-Masukkan tautan Database PostgreSQL Anda ke properti `DATABASE_URL` (Bisa menggunakan Supabase DB/lokal). Pastikan _API Key_ Supabase telah dimasukkan.
+### 3. Buat File `.env`
 
-### 3. Eksekusi Skema Database
-Dorong struktur tabel Prisma terbaru aplikasi ini ke dalam PostgreSQL kosong Anda dengan perintah:
+Salin file contoh environment:
+
+```bash
+cp .env.example .env
+```
+
+Buka `.env` dan isi sesuai konfigurasi Anda:
+
+```env
+# Koneksi PostgreSQL lokal
+DATABASE_URL="postgresql://postgres:password@localhost:5432/smart_waste"
+DIRECT_URL="postgresql://postgres:password@localhost:5432/smart_waste"
+
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Cloudinary (wajib untuk upload foto sampah)
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+
+# OpenRouteService (opsional — untuk jarak rute)
+OPENROUTESERVICE_API_KEY="your-key"
+```
+
+**Cara mendapatkan Cloudinary credentials:**
+1. Daftar gratis di [cloudinary.com](https://cloudinary.com)
+2. Buka dashboard → Settings → API Keys
+3. Salin `Cloud Name`, `API Key`, dan `API Secret`
+
+### 4. Setup Database
+
+Generate Prisma client dan buat semua tabel:
+
 ```bash
 npx prisma generate
 npx prisma db push
 ```
 
-### 4. Jalankan Local Server
-Nyalakan mesin aplikasi Next.js Anda:
+### 5. Seed Data Awal (Opsional)
+
+Mengisi database dengan akun demo dan data contoh:
+
+```bash
+npm run prisma:seed
+```
+
+Data yang dibuat:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@coolwaste.id | Admin@CoolWaste2024 |
+| Collector | andika@example.com | password123 |
+| Collector | dini.collector@example.com | password123 |
+| User | budi@example.com | password123 |
+| User | siti@example.com | password123 |
+
+### 6. Jalankan Server Development
+
 ```bash
 npm run dev
 ```
-Buka browser Anda dan akses: **[http://localhost:3000](http://localhost:3000)**
+
+Buka browser: **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-## 🎬 Trik Simulasi Roleplay (Untuk Presentasi Lomba)
+## Simulasi Alur Lengkap (Golden Flow)
 
-Saat Anda mendemonstrasikan prototipe ini ke hadapan juri acara, ikuti _Golden Flow_ ini untuk memaksimalkan kesan canggih dari algoritma yang telah disusun:
+Untuk mencoba semua fitur dari awal hingga akhir:
 
-1. **Siapkan 2 Jendela Berbeda:**
-   Buka jendela *Incognito/Guest* untuk bertindak sebagai **Collector**, dan buka satu jendela `Chrome` biasa bertindak sebagai **User**.
-2. **Profil Collector (Persiapan Emas):**
-   Login masuk sebagai _Collector_. Tetapkan Radius Pencarian ke `15 KM`, tetapkan Kapasitas Harian ke `50 Kg`, lalu tentukan harga _Kertas_ Rp4,000/Kg. (Sistem akan membuat Collector Anda _Standby_).
-3. **Pesan Otomatis sebagai User:**
-   Kembali ke jendela User. Cukup pilih "Buat Request Pickup": Jual 8 Kg Kertas dan atur Slot Waktu Sore. 
-4. **Pamerkan Auto-Matching (Backend Magic):**
-   Minta Juri beralih melihat ke layar Collector. **Boom!** *Request* si User (dan user-user lain di area yang sama) otomatis berkelompok (*Batching*) dan masuk mendadak ke dalam _Dashboard_ Collector, siap diterkam. 
-5. **Demonstrasikan Logika Haversine:**
-   Jelaskan pada Juri bahwa yang baru saja mereka saksikan bukan cuma _insert database_, tapi di baliknya mesin menghitung rumusan garis bujur/lintang peta GPS memakai metode **Haversine** dan memilah Kapasitas Bagasi (*Load limit*). Ini memastikan logistik daur ulang benar-benar efisiensi karbon.
-6. **Selesaikan Pickup dengan Integritas:**
-   Di layar Collector, tekan *Terima Rute -> Mulai Rute -> Input Aktual Timbangan: "Misal berat aslinya cuma 7.5 Kg"*. Sistem akan otomatis menyesuaikan Nominal Nota.
-7. **Pamerkan Kepercayaan Konsumen (Rating):**
-   Beralih ke layar User. Tunjukkan bahwa tagihan COD tersusun rapi beserta tombol bintang untuk *Review* (*Quality Control Loop* tertutup rapi).
+### Persiapan
+Buka **dua jendela browser berbeda** (misal: Chrome normal + Chrome Incognito).
+
+### Langkah 1 — Login sebagai Collector
+Di jendela Incognito, login dengan `andika@example.com` / `password123`.
+
+Pastikan profil Collector sudah dikonfigurasi:
+- Buka **Dashboard Collector → Kapasitas & Area**
+- Set Radius: `15 km`, Kapasitas Harian: `50 kg`
+- Set harga minimal satu jenis sampah (misal: Plastik = Rp 3.000/kg)
+
+### Langkah 2 — Login sebagai User
+Di jendela Chrome biasa, login dengan `budi@example.com` / `password123`.
+
+Buat request pickup:
+- Klik **Buat Request Pickup**
+- Pilih jenis sampah, isi estimasi berat, pilih slot waktu
+- Upload foto sampah (opsional)
+- Submit
+
+### Langkah 3 — Lihat Auto-Matching di Sisi Collector
+Kembali ke jendela Collector. Refresh Dashboard — pickup User akan muncul otomatis sebagai batch baru menunggu konfirmasi.
+
+### Langkah 4 — Collector Terima & Mulai Rute
+- Klik **Terima Batch** → atur jadwal pickup
+- Setelah jadwal ditentukan, klik **Mulai Rute**
+
+### Langkah 5 — Selesaikan Pickup
+Di halaman **Pickup Activity** (Collector):
+- Input berat aktual timbangan
+- Pilih metode pembayaran
+- Klik **Selesai & Dibayar**
+
+### Langkah 6 — User Memberi Rating
+Kembali ke jendela User → buka riwayat pickup → klik **Nilai Pickup** dan beri bintang.
+
+---
+
+## Struktur Proyek
+
+```
+smart-waste/
+├── app/                     # Next.js App Router (halaman & API routes)
+│   ├── (auth)/              # Login & registrasi
+│   ├── (dashboard)/         # Dashboard admin, collector, user
+│   ├── api/                 # API routes (AI, export CSV, geocode, health)
+│   ├── pickups/             # Detail & riwayat pickup
+│   └── ...
+├── components/              # React components
+│   ├── dashboard/           # Komponen spesifik dashboard
+│   ├── layout/              # Topbar, navigasi
+│   ├── records/             # Kartu detail pickup & foto
+│   └── ui/                  # Komponen UI dasar
+├── lib/
+│   ├── actions/             # Server Actions (dashboard, admin, chat, dll)
+│   ├── data/                # Query database via Prisma
+│   ├── storage/             # Upload ke Cloudinary
+│   ├── auth.ts              # Autentikasi & session cookie
+│   ├── db.ts                # Prisma client singleton
+│   └── ...
+└── prisma/
+    ├── schema.prisma        # Skema database
+    └── seed.ts              # Data awal untuk pengembangan
+```
+
+---
+
+## Admin Panel
+
+Login sebagai Admin untuk mengakses `/dashboard/admin`:
+
+- **Users** — Lihat daftar user, blokir/aktifkan akun, verifikasi Collector
+- **Transactions** — Rekap semua transaksi COD, ekspor CSV
+- **Ratings** — Monitoring rating Collector
+- **Reports** — Tindak laporan chat pengguna
+- **Carbon Stats** — Estimasi jejak karbon yang berhasil dikurangi
+- **Stats** — Statistik platform keseluruhan
+
+---
+
+## Build untuk Produksi
+
+```bash
+npm run build
+npm run start
+```
+
+Untuk deployment ke Vercel, tambahkan semua env vars di Settings → Environment Variables.

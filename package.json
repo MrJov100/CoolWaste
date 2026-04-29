@@ -2,7 +2,7 @@
   "name": "cool-waste-competition-app",
   "version": "2.0.0",
   "private": true,
-  "description": "Competition-ready Cool Waste platform built with Next.js, TypeScript, Prisma, and Supabase.",
+  "description": "CoolWaste — Smart Waste Pickup Platform built with Next.js, TypeScript, Prisma, and Cloudinary.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,8 +14,6 @@
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.53.0",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
