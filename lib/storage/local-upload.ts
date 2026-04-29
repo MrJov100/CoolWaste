@@ -1,47 +1,34 @@
-import { createClient } from "@supabase/supabase-js";
+import { v2 as cloudinary } from "cloudinary";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const BUCKET = process.env.SUPABASE_STORAGE_BUCKET ?? "waste-photos";
-
-function normalizeExtension(fileName: string, mimeType: string) {
-  const fromName = fileName.split(".").pop()?.trim().toLowerCase();
-  if (fromName) return fromName;
-
-  if (mimeType === "image/png") return "png";
-  if (mimeType === "image/webp") return "webp";
-  if (mimeType === "image/gif") return "gif";
-  return "jpg";
-}
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function savePublicUpload(params: {
   file: File;
   folder: string[];
   prefix?: string;
 }) {
-  const extension = normalizeExtension(params.file.name, params.file.type);
-  const name = `${params.prefix ?? Date.now().toString()}-${crypto.randomUUID()}.${extension}`;
-  const storagePath = [...params.folder, name].join("/");
+  const bytes = await params.file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  const folder = params.folder.join("/");
 
-  const bytes = Buffer.from(await params.file.arrayBuffer());
-
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(storagePath, bytes, {
-      contentType: params.file.type || "image/jpeg",
-      upsert: false,
-    });
-
-  if (error) throw new Error(`Upload gagal: ${error.message}`);
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
+  const result = await new Promise<{ secure_url: string; public_id: string }>(
+    (resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream({ folder, resource_type: "image" }, (error, result) => {
+          if (error || !result) return reject(error ?? new Error("Upload gagal"));
+          resolve(result);
+        })
+        .end(buffer);
+    }
+  );
 
   return {
-    path: storagePath,
-    publicUrl: data.publicUrl,
+    path: result.public_id,
+    publicUrl: result.secure_url,
     mimeType: params.file.type || "image/jpeg",
   };
 }
