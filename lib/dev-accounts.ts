@@ -27,7 +27,7 @@ export const DEV_ACCOUNTS = [
 ] as const;
 
 export function isDevAccountSwitcherEnabled() {
-  return process.env.NODE_ENV !== "production";
+  return process.env.NODE_ENV !== "production" || process.env.ENABLE_DEV_SWITCHER === "true";
 }
 
 export function getDevAccountByEmail(email: string) {
